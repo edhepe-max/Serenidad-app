@@ -365,6 +365,9 @@ document.getElementById('stopAll').addEventListener('click', stopAll);
 
 // MediaSession Handlers
 if ('mediaSession' in navigator) {
+  navigator.mediaSession.setActionHandler('play', () => {
+    if (AC && AC.state === 'suspended') AC.resume();
+  });
   navigator.mediaSession.setActionHandler('pause', stopAll);
   navigator.mediaSession.setActionHandler('stop', stopAll);
 }
