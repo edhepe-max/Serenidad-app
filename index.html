@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0e1a">
+
+<title>Serenidad Studio | Colección BBC Premium</title>
+<meta name="description" content="Oasis sonoro de alta fidelidad. 12 atmósferas exclusivas de la BBC y frecuencias puras en un lienzo de 54 elementos.">
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --deep: #0a0e1a;
+    --mid: #111827;
+    --surface: #1a2235;
+    --accent1: #7ec8c8;
+    --accent2: #a78bfa;
+    --accent3: #fbbf50;
+    --text: #e8eaf0;
+    --muted: #6b7a99;
+    --error: #ef4444;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--deep);
+    color: var(--text);
+    font-family: 'Jost', sans-serif;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+
+  /* Fondo Animado Galáctico */
+  .stars { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .star { position: absolute; border-radius: 50%; background: white; animation: twinkle var(--d) ease-in-out infinite alternate; }
+  @keyframes twinkle { from { opacity: var(--min-o); transform: scale(1); } to { opacity: var(--max-o); transform: scale(1.4); } }
+
+  .aurora {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(ellipse 80% 40% at 20% 10%, rgba(126,200,200,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 30% at 80% 5%,  rgba(167,139,250,0.07) 0%, transparent 70%);
+    animation: auroraShift 12s ease-in-out infinite alternate;
+  }
+  @keyframes auroraShift { from { opacity: 0.6; transform: translateY(0px); } to { opacity: 1; transform: translateY(-20px); } }
+
+  .moon-wrap { position: fixed; top: 24px; right: 28px; z-index: 1; pointer-events: none; }
+  .moon {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fff8dc, #f5d87a 60%, #e8b84b);
+    box-shadow: 0 0 30px 8px rgba(251,191,80,0.18), 0 0 60px 20px rgba(251,191,80,0.08);
+    animation: moonPulse 6s ease-in-out infinite alternate;
+  }
+
+  /* Layout Principal */
+  .app { position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; padding: 0 0 240px; max-width: 600px; margin: 0 auto; }
+
+  header { padding: 60px 28px 40px; text-align: center; }
+  header h1 { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 2.8rem; letter-spacing: 0.15em; color: var(--text); line-height: 1; }
+  header h1 em { font-style: italic; color: var(--accent1); }
+  header p { margin-top: 10px; font-size: 0.75rem; font-weight: 200; letter-spacing: 0.4em; text-transform: uppercase; color: var(--muted); }
+  
+  /* Cuadrícula de 54 Iconos */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 15px; padding: 0 24px; }
+
+  .sound-card {
+    background: rgba(26, 34, 53, 0.4); border: 1px solid rgba(255,255,255,0.03); border-radius: 22px;
+    padding: 18px 0 14px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); user-select: none;
+    position: relative; overflow: hidden; backdrop-filter: blur(10px);
+    aspect-ratio: 1/1.1;
+  }
+  .sound-card::before { content: ''; position: absolute; inset: 0; border-radius: 22px; opacity: 0; transition: opacity 0.4s; pointer-events: none; }
+  .sound-card:hover { background: rgba(26, 34, 53, 0.7); transform: translateY(-3px); }
+  .sound-card.playing { border-color: var(--card-color); background: rgba(26, 34, 53, 0.95); transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
+  .sound-card.playing::before { opacity: 1; background: radial-gradient(circle at 50% 30%, var(--card-glow) 0%, transparent 80%); }
+  
+  .card-icon { font-size: 2.3rem; line-height: 1; transition: all 0.4s; z-index: 2; margin-bottom: 8px; }
+  .sound-card.playing .card-icon { filter: drop-shadow(0 0 15px var(--card-color)); transform: scale(1.2); }
+
+  /* Volumen individual */
+  .card-vol-wrap { width: 65%; position: absolute; bottom: 12px; opacity: 0; transform: translateY(10px); transition: all 0.4s; pointer-events: none; z-index: 3; }
+  .sound-card.playing .card-vol-wrap { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .card-slider-track { width: 100%; position: relative; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; }
+  .card-slider-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; background: var(--card-color); }
+  input.card-vol { position: absolute; inset: -15px 0; width: 100%; opacity: 0; cursor: pointer; }
+
+  /* Dock Flotante Inferior */
+  .floating-controls {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 600px;
+    background: rgba(10, 14, 26, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+    border-top: 1px solid rgba(255, 255, 255, 0.05); padding: 20px 0 35px; z-index: 100;
+    border-radius: 35px 35px 0 0; box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.8);
+  }
+
+  .stop-all {
+    position: absolute; top: -24px; left: 50%; transform: translateX(-50%);
+    width: 48px; height: 48px; border-radius: 50%; background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.1); color: var(--muted); font-size: 1.1rem;
+    cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5); z-index: 101;
+  }
+  .stop-all:hover { border-color: var(--error); color: var(--error); transform: translateX(-50%) scale(1.1); }
+
+  .master-wrap { margin: 10px 32px 25px; background: rgba(255,255,255,0.03); border-radius: 20px; padding: 14px 24px; display: flex; align-items: center; gap: 18px; }
+  .master-icon { font-size: 1.1rem; opacity: 0.7; }
+  .slider-track { flex: 1; position: relative; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; }
+  .slider-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: linear-gradient(90deg, var(--accent1), var(--accent2)); }
+  input[type=range] { position: absolute; inset: -15px 0; width: 100%; opacity: 0; cursor: pointer; z-index: 2; }
+
+  .timer-wrap { margin: 0 32px; display: flex; gap: 10px; justify-content: center; }
+  .timer-btn {
+    flex: 1; padding: 12px 4px; border-radius: 14px; border: 1px solid transparent;
+    background: transparent; color: var(--muted); font-family: 'Jost', sans-serif; font-size: 0.8rem;
+    font-weight: 300; letter-spacing: 0.15em; cursor: pointer; transition: all 0.3s;
+  }
+  .timer-btn.active { background: rgba(126,200,200,0.1); border-color: rgba(126,200,200,0.3); color: var(--accent1); }
+  .timer-countdown { text-align: center; font-size: 0.7rem; letter-spacing: 0.3em; color: var(--accent3); margin-top: 10px; min-height: 16px; text-transform: uppercase; }
+
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars" aria-hidden="true"></div>
+<div class="aurora" aria-hidden="true"></div>
+<div class="moon-wrap" aria-hidden="true"><div class="moon"></div></div>
+
+<!-- Audio invisible para mantener la pestaña activa en segundo plano -->
+<audio id="silentAudio" loop style="display:none"></audio>
+
+<main class="app">
+  <header>
+    <h1><em>Sere</em>nidad</h1>
+    <p>Colección BBC Premium | 54 Elementos</p>
+  </header>
+  <section class="grid" id="mainGrid"></section>
+</main>
+
+<div class="floating-controls">
+  <button class="stop-all" id="stopAll">⏹</button>
+  <section class="master-wrap">
+    <span class="master-icon">🔊</span>
+    <div class="slider-track">
+      <div class="slider-fill" id="masterFill" style="width:80%"></div>
+      <input type="range" id="masterVol" min="0" max="1" step="0.01" value="0.8">
+    </div>
+  </section>
+  <nav class="timer-wrap">
+    <button class="timer-btn" data-mins="15">15M</button>
+    <button class="timer-btn" data-mins="30">30M</button>
+    <button class="timer-btn" data-mins="60">1H</button>
+    <button class="timer-btn" data-mins="0">∞</button>
+  </nav>
+  <div class="timer-countdown" id="timerDisplay"></div>
+</div>
+
+<script>
+// --- Fondo de Estrellas ---
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 90; i++) {
+  const s = document.createElement('div'); s.className = 'star';
+  const size = Math.random() * 2 + 0.5;
+  const minO = (Math.random() * 0.2 + 0.05).toFixed(2);
+  const maxO = (parseFloat(minO) + Math.random() * 0.5 + 0.2).toFixed(2);
+  const d = (Math.random() * 4 + 2).toFixed(1) + 's';
+  s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${d};--min-o:${minO};--max-o:${maxO};animation-delay:${(Math.random()*5).toFixed(1)}s;`;
+  starsEl.appendChild(s);
+}
+
+// --- BIBLIOTECA DE 54 ELEMENTOS (12 BBC + 42 Complementos) ---
+const library = [
+  // TUS 12 ARCHIVOS SELECCIONADOS (BBC)
+  { id: 's1', icon: '🌫️', color: '#7ec8c8', url: 'bbc_atmosphere_07063086.mp3' },
+  { id: 's2', icon: '❄️', color: '#e0f2fe', url: 'bbc_tibetan-sn_nhu0501102.mp3' },
+  { id: 's3', icon: '💧', color: '#38bdf8', url: 'bbc_fast-flowi_nhu0510424.mp3' },
+  { id: 's4', icon: '🔥', color: '#ea580c', url: 'bbc_bonfires--_07019120.mp3' },
+  { id: 's5', icon: '🌌', color: '#a78bfa', url: 'bbc_atmosphere_07052031.mp3' },
+  { id: 's6', icon: '🏞️', color: '#0ea5e9', url: 'bbc_rivers---b_07070201.mp3' },
+  { id: 's7', icon: '🏠', color: '#fb923c', url: 'bbc_fires--hou_07059050.mp3' },
+  { id: 's8', icon: '🔔', color: '#fcd34d', url: 'bbc_st--pauls-_07002178.mp3' },
+  { id: 's9', icon: '🌫️', color: '#94a3b8', url: 'bbc_atmosphere_07058196.mp3' },
+  { id: 's10', icon: '🌃', color: '#1e3a8a', url: 'bbc_atmosphere_07056038.mp3' },
+  { id: 's11', icon: '🌆', color: '#f43f5e', url: 'bbc_exterior-a_07044002.mp3' },
+  { id: 's12', icon: '🎇', color: '#fbbf50', url: 'bbc_bonfires--_07019121.mp3' },
+  
+  // COMPLEMENTOS SINTÉTICOS PARA COMPLETAR 54
+  { id: 's13', icon: '🌈', color: '#ffffff', url: 'synth' }, // Blanco
+  { id: 's14', icon: '🌸', color: '#fbcfe8', url: 'synth' }, // Rosa
+  { id: 's15', icon: '🟤', color: '#78350f', url: 'synth' }, // Marrón
+  { id: 's16', icon: '🩶', color: '#94a3b8', url: 'synth' }, // Gris
+  { id: 's17', icon: '💙', color: '#3b82f6', url: 'synth' }, // Azul
+  { id: 's18', icon: '💚', color: '#10b981', url: 'synth' }, // Verde
+  { id: 's19', icon: '💜', color: '#8b5cf6', url: 'synth' }, // Violeta
+  { id: 's20', icon: '🧘', color: '#a78bfa', url: 'synth' },
+  { id: 's21', icon: '💓', color: '#ef4444', url: 'synth' },
+  { id: 's22', icon: '🪽', color: '#e8eaf0', url: 'synth' },
+  { id: 's23', icon: '💿', color: '#64748b', url: 'synth' },
+  { id: 's24', icon: '☕', color: '#d97706', url: 'synth' },
+  { id: 's25', icon: '🌀', color: '#38bdf8', url: 'synth' },
+  { id: 's26', icon: '🌑', color: '#111827', url: 'synth' },
+  { id: 's27', icon: '✨', color: '#ffffff', url: 'synth' },
+  { id: 's28', icon: '🪁', color: '#7ec8c8', url: 'synth' },
+  { id: 's29', icon: '🕊️', color: '#e8eaf0', url: 'synth' },
+  { id: 's30', icon: '🫧', color: '#a5f3fc', url: 'synth' },
+  { id: 's31', icon: '🦋', color: '#f472b6', url: 'synth' },
+  { id: 's32', icon: '🕯️', color: '#fbbf50', url: 'synth' },
+  { id: 's33', icon: '🎍', color: '#16a34a', url: 'synth' },
+  { id: 's34', icon: '🎐', color: '#fca5a5', url: 'synth' },
+  { id: 's35', icon: '🐚', color: '#cbd5e1', url: 'synth' },
+  { id: 's36', icon: '🦉', color: '#a78bfa', url: 'synth' },
+  { id: 's37', icon: '🛸', color: '#818cf8', url: 'synth' },
+  { id: 's38', icon: '🦢', color: '#e2e8f0', url: 'synth' },
+  { id: 's39', icon: '🛶', color: '#0ea5e9', url: 'synth' },
+  { id: 's40', icon: '🐾', color: '#78350f', url: 'synth' },
+  { id: 's41', icon: '🦌', color: '#b45309', url: 'synth' },
+  { id: 's42', icon: '🏔️', color: '#f8fafc', url: 'synth' },
+  { id: 's43', icon: '⛈️', color: '#475569', url: 'synth' },
+  { id: 's44', icon: '🌩️', color: '#fde047', url: 'synth' },
+  { id: 's45', icon: '🏙️', color: '#94a3b8', url: 'synth' },
+  { id: 's46', icon: '🏠', color: '#3b82f6', url: 'synth' },
+  { id: 's47', icon: '🌳', color: '#16a34a', url: 'synth' },
+  { id: 's48', icon: '🍂', color: '#b45309', url: 'synth' },
+  { id: 's49', icon: '🏞️', color: '#0ea5e9', url: 'synth' },
+  { id: 's50', icon: '🌄', color: '#fb923c', url: 'synth' },
+  { id: 's51', icon: '⛰️', color: '#64748b', url: 'synth' },
+  { id: 's52', icon: '🦅', color: '#94a3b8', url: 'synth' },
+  { id: 's53', icon: '⛵', color: '#0ea5e9', url: 'synth' },
+  { id: 's54', icon: '🤍', color: '#e8eaf0', url: 'synth' }
+];
+
+// --- Motor de Audio Híbrido ---
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let AC = null; let masterGain = null;
+const audioBuffers = {}; const state = {}; const localVolumes = {}; 
+let masterVolume = 0.8;
+
+// Media Session API para control desde pantalla de bloqueo
+function updateMediaSession() {
+  if ('mediaSession' in navigator) {
+    const isPlaying = Object.keys(state).length > 0;
+    navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: 'Serenidad Studio',
+      artist: 'Colección BBC Premium',
+      album: 'Bienestar y Enfoque',
+      artwork: [{ src: 'https://via.placeholder.com/512x512/0a0e1a/7ec8c8?text=Serenidad', sizes: '512x512', type: 'image/png' }]
+    });
+  }
+}
+
+let wNoiseBuf, pNoiseBuf;
+function initNoise() {
+  if (wNoiseBuf) return;
+  wNoiseBuf = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate);
+  pNoiseBuf = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate);
+  const wd = wNoiseBuf.getChannelData(0); const pd = pNoiseBuf.getChannelData(0);
+  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+  for (let i = 0; i < AC.sampleRate * 2; i++) {
+      const w = Math.random() * 2 - 1; wd[i] = w; 
+      b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759; b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
+      b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980; pd[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)/7; b6=w*0.115926;
+  }
+}
+
+function createSynthFallback(id, gainNode) {
+  initNoise(); const src = AC.createBufferSource();
+  src.buffer = (['s17', 's18', 's19'].includes(id)) ? wNoiseBuf : pNoiseBuf;
+  src.loop = true; 
+  if(['s18', 's19'].includes(id)){
+    const f = AC.createBiquadFilter(); f.type = (id === 's18') ? 'bandpass' : 'highpass'; f.frequency.value = 1000;
+    src.connect(f); f.connect(gainNode);
+  } else { src.connect(gainNode); }
+  src.start();
+  return { stop: () => src.stop() };
+}
+
+function initAudio() {
+  if (!AC) { 
+    AC = new AudioContext(); masterGain = AC.createGain(); masterGain.gain.value = masterVolume; masterGain.connect(AC.destination); 
+    // Truco: Audio silencioso para evitar que el navegador suspenda el audio al bloquear
+    const silent = document.getElementById('silentAudio');
+    silent.src = "data:audio/wav;base64,UklGRigAAABXQVZFRm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA== ";
+    silent.play().catch(()=>{});
+  }
+  if (AC.state === 'suspended') AC.resume();
+}
+
+// --- Render Interfaz ---
+const mainGrid = document.getElementById('mainGrid');
+library.forEach(s => {
+  localVolumes[s.id] = 0.7; 
+  const card = document.createElement('div');
+  card.className = 'sound-card'; card.id = `card-${s.id}`;
+  card.innerHTML = `<div class="card-icon">${s.icon}</div>
+    <div class="card-vol-wrap"><div class="card-slider-track"><div class="card-slider-fill" id="fill-${s.id}" style="width:70%"></div>
+    <input type="range" class="card-vol" min="0" max="1" step="0.01" value="0.7"></div></div>`;
+
+  card.addEventListener('click', (e) => { if (e.target.classList.contains('card-vol')) return; initAudio(); toggleSound(s.id); });
+  const vs = card.querySelector('.card-vol'); const fill = card.querySelector('.card-slider-fill');
+  vs.addEventListener('input', () => { 
+    const v = parseFloat(vs.value); 
+    localVolumes[s.id] = v; 
+    fill.style.width = (v * 100) + '%'; 
+    if (state[s.id]) state[s.id].gain.gain.setTargetAtTime(v, AC.currentTime, 0.05); 
+  });
+  mainGrid.appendChild(card);
+});
+
+function toggleSound(id) { if (state[id]) stopSound(id); else startSound(id); }
+
+async function startSound(id) {
+  if (state[id]) return; const card = document.getElementById(`card-${id}`); const sd = library.find(s => s.id === id);
+  if (sd.url === 'synth') { audioBuffers[id] = 'synth'; } 
+  else {
+    try {
+      const res = await fetch(sd.url); if (!res.ok) throw new Error();
+      const ab = await res.arrayBuffer(); audioBuffers[id] = await AC.decodeAudioData(ab);
+    } catch (e) { audioBuffers[id] = 'synth'; }
+  }
+  card.classList.add('playing');
+  const lg = AC.createGain(); lg.gain.value = localVolumes[id]; lg.connect(masterGain);
+  let so; if (audioBuffers[id] === 'synth') { so = createSynthFallback(id, lg); } 
+  else { 
+    const s = AC.createBufferSource(); s.buffer = audioBuffers[id]; s.loop = true; s.connect(lg); s.start(); 
+    so = { stop: () => { s.stop(); s.disconnect(); } }; 
+  }
+  state[id] = { sourceObj: so, gain: lg };
+  updateMediaSession();
+}
+
+function stopSound(id) {
+  if (!state[id]) return; const { sourceObj, gain } = state[id]; 
+  gain.gain.setTargetAtTime(0, AC.currentTime, 0.1);
+  setTimeout(() => { try { sourceObj.stop(); gain.disconnect(); } catch(e){} }, 400); 
+  delete state[id];
+  const card = document.getElementById(`card-${id}`); if(card) card.classList.remove('playing');
+  updateMediaSession();
+}
+
+function stopAll() { Object.keys(state).forEach(stopSound); }
+
+const mVol = document.getElementById('masterVol'); const mFill = document.getElementById('masterFill');
+mVol.addEventListener('input', () => { if(AC) initAudio(); masterVolume = parseFloat(mVol.value); mFill.style.width = (masterVolume * 100) + '%'; if(masterGain) masterGain.gain.setTargetAtTime(masterVolume, AC.currentTime, 0.05); });
+
+let ti = null; let te = null; const td = document.getElementById('timerDisplay');
+document.querySelectorAll('.timer-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const mins = parseInt(btn.dataset.mins); document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+    clearInterval(ti); if (mins === 0) { td.textContent = ''; te = null; return; } te = Date.now() + mins * 60000;
+    ti = setInterval(() => { 
+      const rem = te - Date.now(); 
+      if (rem <= 0) { clearInterval(ti); td.textContent = ''; stopAll(); return; }
+      const m = Math.floor(rem / 60000); const s = Math.floor((rem % 60000) / 1000); 
+      td.textContent = `⏱ ${m}:${s.toString().padStart(2,'0')} restantes`; 
+    }, 1000);
+  });
+});
+document.getElementById('stopAll').addEventListener('click', stopAll);
+
+// MediaSession Handlers
+if ('mediaSession' in navigator) {
+  navigator.mediaSession.setActionHandler('pause', stopAll);
+  navigator.mediaSession.setActionHandler('stop', stopAll);
+}
+</script>
+</body>
+</html>
