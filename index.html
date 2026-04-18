@@ -17,15 +17,21 @@
   --muted:    #4e6080;
   --primary:  #7ecfcf;
 }
-html, body { min-height:100%; background:#04060e; color:var(--text); font-family:'Outfit',sans-serif; overflow-x:hidden; }
+html { min-height:100%; background:#04060e; }
+body { min-height:100%; color:var(--text); font-family:'Outfit',sans-serif; overflow-x:hidden; background:transparent; }
 
-/* ══ CANVAS FONDO ══ */
+/* ══ CANVAS FONDO — FIJO, NUNCA SE MUEVE CON SCROLL ══ */
 #bgCanvas {
-  position:fixed; inset:0; z-index:0; pointer-events:none;
-  width:100%; height:100%;
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  z-index:0;
+  pointer-events:none;
+  width:100vw;
+  height:100vh;
+  display:block;
 }
 
-/* ══ OVERLAY VIGNETTE ══ */
+/* ══ OVERLAY VIGNETTE — también fijo ══ */
 .vignette {
   position:fixed; inset:0; z-index:1; pointer-events:none;
   background:
@@ -44,21 +50,20 @@ html, body { min-height:100%; background:#04060e; color:var(--text); font-family
 }
 #easterToast.show { transform:translateX(-50%) translateY(0); opacity:1; }
 
-/* ══ SCENE INFO PILL ══ */
-#scenePill {
-  position:fixed; bottom:calc(env(safe-area-inset-bottom,0px) + 178px); left:50%;
-  transform:translateX(-50%);
-  z-index:50; display:flex; align-items:center; gap:8px;
-  background:rgba(8,12,22,.60); border:1px solid rgba(255,255,255,.08);
-  backdrop-filter:blur(16px); border-radius:999px; padding:5px 14px;
-  pointer-events:none; transition:opacity 1s ease;
-}
-#scenePill .pill-icon { font-size:.9rem; }
-#scenePill .pill-name { font-family:'Cormorant Garamond',serif; font-size:.78rem; font-weight:300; color:var(--text); letter-spacing:.05em; }
-#scenePill .pill-time { font-size:.58rem; color:var(--muted); letter-spacing:.12em; }
+/* ══ SCENE PILL — ahora vive DENTRO del dock, no flotante ══ */
+/* (eliminado el posicionado fixed anterior) */
 
 /* ══ APP LAYOUT ══ */
-.app { position:relative; z-index:10; min-height:100vh; display:flex; flex-direction:column; padding-bottom:172px; max-width:600px; margin:0 auto; }
+.app {
+  position:relative;
+  z-index:10;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  padding-bottom:200px; /* espacio para el dock expandido */
+  max-width:600px;
+  margin:0 auto;
+}
 
 header { padding:52px 20px 18px; text-align:center; }
 header h1 { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:2.6rem; letter-spacing:.1em; margin-bottom:6px;
@@ -123,13 +128,53 @@ header h1 em { font-style:italic; color:var(--primary); }
 .cslider { -webkit-appearance:none; width:100%; height:2px; border-radius:2px; background:rgba(255,255,255,.1); outline:none; }
 .cslider::-webkit-slider-thumb { -webkit-appearance:none; width:10px; height:10px; border-radius:50%; background:var(--text); cursor:pointer; }
 
-/* Dock */
-.dock { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:600px;
-  background:rgba(4,6,14,.90); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
-  border-top:1px solid rgba(255,255,255,.06); padding:14px 20px calc(26px + env(safe-area-inset-bottom,0px)); z-index:100;
-  display:flex; flex-direction:column; gap:13px; border-radius:22px 22px 0 0; }
-.dock-row { display:flex; align-items:center; gap:14px; }
-.btn-stop { width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); color:var(--muted); font-size:.95rem; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+/* ══ DOCK ══ */
+.dock {
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:600px;
+  background:rgba(4,6,14,.92);
+  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+  border-top:1px solid rgba(255,255,255,.06);
+  padding:10px 20px calc(20px + env(safe-area-inset-bottom,0px));
+  z-index:100;
+  display:flex; flex-direction:column; gap:10px;
+  border-radius:22px 22px 0 0;
+}
+
+/* Escena pill — ahora dentro del dock */
+.scene-pill-dock {
+  display:flex; align-items:center; gap:8px;
+  padding:5px 10px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:999px;
+  flex:1;
+  min-width:0;
+  overflow:hidden;
+}
+.scene-pill-dock .pill-icon { font-size:.85rem; flex-shrink:0; }
+.scene-pill-dock .pill-name {
+  font-family:'Cormorant Garamond',serif;
+  font-size:.75rem; font-weight:300;
+  color:var(--text); letter-spacing:.04em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  flex:1;
+}
+.scene-pill-dock .pill-badge {
+  font-size:.52rem; color:var(--muted);
+  letter-spacing:.1em; flex-shrink:0;
+  white-space:nowrap;
+}
+
+.dock-row { display:flex; align-items:center; gap:10px; }
+.btn-stop {
+  width:38px; height:38px; border-radius:50%;
+  background:rgba(255,80,80,.08); border:1px solid rgba(255,80,80,.22);
+  color:rgba(255,120,120,.8); font-size:.95rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  transition:all .2s;
+}
+.btn-stop:active { background:rgba(255,80,80,.2); transform:scale(.92); }
 .vol-wrap { flex:1; display:flex; align-items:center; gap:11px; }
 .vol-icon { font-size:.95rem; opacity:.45; }
 .mslider { -webkit-appearance:none; flex:1; height:3px; border-radius:3px; outline:none; }
@@ -153,13 +198,6 @@ header h1 em { font-style:italic; color:var(--primary); }
 <div class="vignette"></div>
 <div id="sceneTransOverlay"></div>
 <div id="easterToast"></div>
-
-<!-- Scene pill -->
-<div id="scenePill">
-  <span class="pill-icon" id="pillIcon">🌙</span>
-  <span class="pill-name" id="pillName">Cargando escena...</span>
-  <span class="pill-time" id="pillTime"></span>
-</div>
 
 <main class="app">
   <header>
@@ -226,14 +264,29 @@ header h1 em { font-style:italic; color:var(--primary); }
   <section class="sound-grid" id="mainGrid"></section>
 </main>
 
+<!-- DOCK: scene pill + controles -->
 <div class="dock">
+  <!-- Fila 1: scene pill + stop + volumen master -->
   <div class="dock-row">
-    <button class="btn-stop" id="btnStop">⏹</button>
+    <!-- Pill de escena: vive aquí, no en el canvas -->
+    <div class="scene-pill-dock">
+      <span class="pill-icon" id="pillIcon">🌙</span>
+      <span class="pill-name" id="pillName">Cargando...</span>
+      <span class="pill-badge" id="pillBadge"></span>
+    </div>
+    <button class="btn-stop" id="btnStop" title="Detener todo">⏹</button>
+  </div>
+
+  <!-- Fila 2: volumen master -->
+  <div class="dock-row">
     <div class="vol-wrap">
-      <span class="vol-icon">🔊</span>
+      <span class="vol-icon">🔈</span>
       <input type="range" class="mslider" id="masterVol" min="0" max="1" step="0.01" value="0.8">
+      <span class="vol-icon">🔊</span>
     </div>
   </div>
+
+  <!-- Fila 3: timer -->
   <div class="dock-row" style="flex-direction:column;gap:5px">
     <nav class="timer-row">
       <button class="tbtn" data-m="15">15M</button>
@@ -248,96 +301,92 @@ header h1 em { font-style:italic; color:var(--primary); }
 <script>
 'use strict';
 
-// ══════════════════════════════════════════════════════════
-// UTILIDADES
-// ══════════════════════════════════════════════════════════
 const $ = id => document.getElementById(id);
 const haptic = () => { try{ navigator.vibrate&&navigator.vibrate(28); }catch(e){} };
 
 // ══════════════════════════════════════════════════════════
-// MOTOR DE FONDO — Canvas de Arte Natural (pantalla completa)
+// MOTOR DE FONDO — Canvas FIJO (position:fixed en CSS)
+// El canvas nunca se mueve porque está en position:fixed.
+// La animación corre con requestAnimationFrame de forma independiente al scroll.
 // ══════════════════════════════════════════════════════════
 const BG = (() => {
   const canvas = $('bgCanvas');
   const ctx = canvas.getContext('2d');
   let W, H, raf, particles = [], tick = 0;
-  let currentScene = null, targetScene = null;
-  let transitionAlpha = 0; // 0=currentScene, 1=targetScene
-  let isTransitioning = false;
+  let currentScene = null;
 
-  // ── PALETAS DE 56 ESCENAS ─────────────────────────────
+  // ── PALETAS — 56 ESCENAS (momento × día) ─────────────────
   const PALETTES = {
-    madrugada_lunes:    { sky:['#04060e','#090d1a','#0d1225'], stars:1, moon:.9, fog:.3, aurora:.6, name:'Aurora Boreal de Lunes', desc:'Velado silencio antes del alba', badge:'🌑 0–5h' },
-    madrugada_martes:   { sky:['#060810','#0a0f1c','#0f1530'], stars:.9, moon:.7, fog:.5, fireflies:.4, name:'Madrugada de Luciérnagas', desc:'Destellos en el bosque dormido', badge:'🌑 0–5h' },
-    madrugada_miercoles:{ sky:['#050810','#0c1020','#10182e'], stars:1, moon:0, rain:.3, fog:.4, name:'Lluvia Silenciosa', desc:'Gotas que no despiertan al mundo', badge:'🌑 0–5h' },
-    madrugada_jueves:   { sky:['#04060e','#07090f','#0a0e18'], stars:.8, moon:.8, mist:.6, name:'Niebla del Lago', desc:'El agua respira en silencio', badge:'🌑 0–5h' },
-    madrugada_viernes:  { sky:['#060510','#0e0c1e','#160d28'], stars:.9, moon:.5, aurora:.8, name:'Aurora Violeta', desc:'El cielo tiñe el horizonte', badge:'🌑 0–5h' },
-    madrugada_sabado:   { sky:['#030508','#060a10','#0a1018'], stars:1, moon:1, fog:.2, name:'Luna de Medianoche', desc:'La luna gobierna el silencio', badge:'🌑 0–5h' },
-    madrugada_domingo:  { sky:['#04050c','#080b14','#0c1020'], stars:.85, moon:.6, snow:.2, name:'Primera Nieve', desc:'Copos suaves antes del alba', badge:'🌑 0–5h' },
-    amanecer_lunes:     { sky:['#1a0a0a','#3d1a0a','#7a3010'], sun:.3, birds:.6, mist:.4, name:'Primer Lunes del Alba', desc:'El sol asoma tímido entre montañas', badge:'🌅 5–7h' },
-    amanecer_martes:    { sky:['#0d1a2e','#1e2e50','#c47a3a'], sun:.4, birds:.8, rain:.1, name:'Amanecer Tormentoso', desc:'Luz dorada entre nubarrones', badge:'🌅 5–7h' },
-    amanecer_miercoles: { sky:['#1c0a1a','#3d1035','#8b3060'], sun:.35, mist:.6, fireflies:.2, name:'Amanecer Púrpura', desc:'El cielo sangra violeta y rosa', badge:'🌅 5–7h' },
-    amanecer_jueves:    { sky:['#0a1020','#1e3050','#d48a30'], sun:.5, birds:1, name:'Amanecer de Aves', desc:'Miles de alas saludan el día', badge:'🌅 5–7h' },
-    amanecer_viernes:   { sky:['#1a0808','#4a1a0a','#c46030'], sun:.4, fog:.5, name:'Alba Dorada', desc:'Niebla que el sol disuelve lento', badge:'🌅 5–7h' },
-    amanecer_sabado:    { sky:['#0a0814','#1a1228','#8a4020'], sun:.3, snow:.3, name:'Amanecer Nevado', desc:'Copos rosados al nacer el sol', badge:'🌅 5–7h' },
-    amanecer_domingo:   { sky:['#080c18','#18243a','#c88040'], sun:.5, birds:.7, mist:.3, name:'Domingo Dorado', desc:'La luz llega suave y gentil', badge:'🌅 5–7h' },
-    manana_lunes:       { sky:['#0e2040','#1a3a6a','#4a7ab0'], sun:.7, birds:.5, name:'Lunes de Cielo Azul', desc:'Claridad para empezar con fuerza', badge:'🌤 7–12h' },
-    manana_martes:      { sky:['#183050','#284a80','#5890c0'], sun:.6, clouds:.5, birds:.4, name:'Mañana Nublada', desc:'Nubes blancas como pensamientos', badge:'🌤 7–12h' },
-    manana_miercoles:   { sky:['#102038','#203060','#4878a8'], sun:.8, rain:.4, name:'Lluvia de Mañana', desc:'La tierra bebe con gratitud', badge:'🌤 7–12h' },
-    manana_jueves:      { sky:['#0c1c38','#1a2e5a','#3860a0'], sun:.7, mist:.3, birds:.6, name:'Mañana Serena', desc:'Paz que solo el jueves regala', badge:'🌤 7–12h' },
-    manana_viernes:     { sky:['#142540','#203860','#4070a0'], sun:.75, birds:.8, name:'Mañana de Pájaros', desc:'El viernes canta antes del mediodía', badge:'🌤 7–12h' },
-    manana_sabado:      { sky:['#1a3050','#284870','#5088b8'], sun:.65, clouds:.4, fog:.2, name:'Sábado Misterioso', desc:'Bruma que el sol tardará en vencer', badge:'🌤 7–12h' },
-    manana_domingo:     { sky:['#0e2040','#1c3460','#4a7ab0'], sun:.9, birds:.9, name:'Domingo Luminoso', desc:'El día más tranquilo del cielo', badge:'🌤 7–12h' },
-    mediodia_lunes:     { sky:['#0a1830','#143056','#3870a8'], sun:1, clouds:.3, name:'Cénit de Lunes', desc:'El sol en su máxima claridad', badge:'☀️ 12–15h' },
-    mediodia_martes:    { sky:['#0c1a32','#1a2e5a','#4080b0'], sun:.9, rain:.6, name:'Tormenta de Mediodía', desc:'Rayos que parten el cielo azul', badge:'☀️ 12–15h' },
-    mediodia_miercoles: { sky:['#0a1828','#183050','#3068a0'], sun:1, clouds:.6, name:'Miércoles de Nubes', desc:'Mosaico de blanco y azul', badge:'☀️ 12–15h' },
-    mediodia_jueves:    { sky:['#081628','#162848','#2e5898'], sun:.95, name:'Claridad Pura', desc:'Sin una sola nube el jueves', badge:'☀️ 12–15h' },
-    mediodia_viernes:   { sky:['#0a1830','#183050','#3870a8'], sun:.9, birds:.3, name:'Viernes Amplio', desc:'El cielo celebra la semana', badge:'☀️ 12–15h' },
-    mediodia_sabado:    { sky:['#0c1c34','#1a2e58','#3a72a8'], sun:.85, clouds:.5, rain:.2, name:'Sábado Variable', desc:'Sol y nubes en conversación', badge:'☀️ 12–15h' },
-    mediodia_domingo:   { sky:['#081428','#142440','#2a5090'], sun:1, birds:.4, name:'Mediodía Domingo', desc:'La luz más generosa de la semana', badge:'☀️ 12–15h' },
-    tarde_lunes:        { sky:['#182040','#2a3460','#5060a0'], sun:.6, clouds:.5, name:'Tarde de Lunes', desc:'El sol empieza su descenso', badge:'🌇 15–18h' },
-    tarde_martes:       { sky:['#1e2848','#344070','#6878b0'], sun:.55, rain:.3, name:'Lluvia de Tarde', desc:'El martes se lava la cara', badge:'🌇 15–18h' },
-    tarde_miercoles:    { sky:['#1a2440','#2e3a68','#5868a8'], sun:.6, mist:.4, name:'Tarde Brumosa', desc:'La luz pierde su dureza', badge:'🌇 15–18h' },
-    tarde_jueves:       { sky:['#182038','#2a3060','#5060a0'], sun:.65, clouds:.3, birds:.5, name:'Tarde de Gaviotas', desc:'Aves que siguen la luz', badge:'🌇 15–18h' },
-    tarde_viernes:      { sky:['#1e2848','#30406a','#6070a8'], sun:.6, name:'Tarde de Viernes', desc:'El tiempo ralentiza su marcha', badge:'🌇 15–18h' },
-    tarde_sabado:       { sky:['#182038','#283858','#507098'], sun:.55, clouds:.6, name:'Tarde Sombría', desc:'Nubes que pintan el horizonte', badge:'🌇 15–18h' },
-    tarde_domingo:      { sky:['#1a2240','#2c3860','#5870a0'], sun:.7, birds:.6, name:'Tarde Dorada', desc:'El domingo regala su luz más suave', badge:'🌇 15–18h' },
-    atardecer_lunes:    { sky:['#3a1a28','#6a2818','#c05020'], sun:.4, clouds:.6, name:'Atardecer de Lunes', desc:'El cielo llora naranja y rojo', badge:'🌆 18–20h' },
-    atardecer_martes:   { sky:['#2a1030','#5a2020','#c04030'], sun:.35, rain:.2, name:'Puesta Tormentosa', desc:'El sol se esconde entre rayos', badge:'🌆 18–20h' },
-    atardecer_miercoles:{ sky:['#3a1830','#6a2840','#b04060'], sun:.4, mist:.3, name:'Atardecer Púrpura', desc:'Rosa y lila en el horizonte', badge:'🌆 18–20h' },
-    atardecer_jueves:   { sky:['#2a1020','#5a2018','#c84820'], sun:.5, birds:.7, name:'Vuelo del Atardecer', desc:'Siluetas de aves en el fuego', badge:'🌆 18–20h' },
-    atardecer_viernes:  { sky:['#3a1818','#6a2a10','#d05818'], sun:.45, clouds:.5, name:'Viernes Naranja', desc:'El cielo celebra el fin de semana', badge:'🌆 18–20h' },
-    atardecer_sabado:   { sky:['#2e1520','#581f2a','#b84038'], sun:.4, fog:.4, name:'Sábado Rosado', desc:'La niebla abraza el sol poniente', badge:'🌆 18–20h' },
-    atardecer_domingo:  { sky:['#2a1218','#501e18','#c04420'], sun:.5, clouds:.4, name:'Último Atardecer', desc:'La semana se despide en llamas', badge:'🌆 18–20h' },
-    noche_lunes:        { sky:['#04060e','#08101c','#0c1828'], stars:.8, moon:.6, fog:.3, name:'Noche de Lunes', desc:'La semana duerme su primer sueño', badge:'🌙 20–23h' },
-    noche_martes:       { sky:['#03050c','#070c18','#0b1424'], stars:.9, moon:.5, fireflies:.5, name:'Luciérnagas de Martes', desc:'Pequeñas luces danzan en la noche', badge:'🌙 20–23h' },
-    noche_miercoles:    { sky:['#040608','#08101a','#0c1828'], stars:.7, moon:.4, rain:.4, name:'Lluvia Nocturna', desc:'La noche se lava en silencio', badge:'🌙 20–23h' },
-    noche_jueves:       { sky:['#03050e','#07091a','#0b1128'], stars:.85, moon:.8, name:'Luna de Jueves', desc:'La luna llena ilumina el camino', badge:'🌙 20–23h' },
-    noche_viernes:      { sky:['#05060e','#090c1c','#0e1428'], stars:.9, moon:.5, aurora:.4, name:'Aurora de Viernes', desc:'El cielo celebra el fin de semana', badge:'🌙 20–23h' },
-    noche_sabado:       { sky:['#04060c','#080c18','#0c1224'], stars:1, moon:.7, name:'Noche Estrellada', desc:'El sábado abre el cielo entero', badge:'🌙 20–23h' },
-    noche_domingo:      { sky:['#030508','#070a14','#0b1020'], stars:.8, moon:.9, fog:.3, name:'Noche de Domingo', desc:'La semana descansa bajo la luna', badge:'🌙 20–23h' },
-    medianoche_lunes:   { sky:['#030408','#060810','#090d18'], stars:.9, moon:.8, fog:.5, name:'Medianoche Silente', desc:'El mundo contiene la respiración', badge:'✨ 23–1h' },
-    medianoche_martes:  { sky:['#02030a','#05070f','#080b18'], stars:1, moon:.6, aurora:.7, name:'Aurora Boreal II', desc:'El cielo danza en colores fríos', badge:'✨ 23–1h' },
-    medianoche_miercoles:{ sky:['#030408','#06080f','#090c18'], stars:.85, moon:.5, rain:.2, name:'Lluvia de Meteoros', desc:'Estrellas que caen en silencio', badge:'✨ 23–1h' },
-    medianoche_jueves:  { sky:['#02030a','#04060e','#070918'], stars:.9, moon:1, name:'Luna Llena de Jueves', desc:'La luna pinta de plata el bosque', badge:'✨ 23–1h' },
-    medianoche_viernes: { sky:['#030408','#06080e','#090c1a'], stars:1, moon:.6, fireflies:.3, name:'Magia de Viernes', desc:'Las luciérnagas despiden la semana', badge:'✨ 23–1h' },
-    medianoche_sabado:  { sky:['#030408','#060910','#0a0e1c'], stars:1, moon:.9, aurora:.5, name:'Cielo Infinito', desc:'El sábado regala su cielo más amplio', badge:'✨ 23–1h' },
-    medianoche_domingo: { sky:['#020408','#05080f','#080c18'], stars:.9, moon:.8, fog:.4, name:'Víspera del Lunes', desc:'La noche guarda el último misterio', badge:'✨ 23–1h' },
+    madrugada_lunes:    { sky:['#04060e','#090d1a','#0d1225'], stars:1, moon:.9, fog:.3, aurora:.6, name:'Aurora Boreal de Lunes', badge:'🌑 0–5h' },
+    madrugada_martes:   { sky:['#060810','#0a0f1c','#0f1530'], stars:.9, moon:.7, fog:.5, fireflies:.4, name:'Madrugada de Luciérnagas', badge:'🌑 0–5h' },
+    madrugada_miercoles:{ sky:['#050810','#0c1020','#10182e'], stars:1, moon:0, rain:.3, fog:.4, name:'Lluvia Silenciosa', badge:'🌑 0–5h' },
+    madrugada_jueves:   { sky:['#04060e','#07090f','#0a0e18'], stars:.8, moon:.8, mist:.6, name:'Niebla del Lago', badge:'🌑 0–5h' },
+    madrugada_viernes:  { sky:['#060510','#0e0c1e','#160d28'], stars:.9, moon:.5, aurora:.8, name:'Aurora Violeta', badge:'🌑 0–5h' },
+    madrugada_sabado:   { sky:['#030508','#060a10','#0a1018'], stars:1, moon:1, fog:.2, name:'Luna de Medianoche', badge:'🌑 0–5h' },
+    madrugada_domingo:  { sky:['#04050c','#080b14','#0c1020'], stars:.85, moon:.6, snow:.2, name:'Primera Nieve', badge:'🌑 0–5h' },
+    amanecer_lunes:     { sky:['#1a0a0a','#3d1a0a','#7a3010'], sun:.3, birds:.6, mist:.4, name:'Primer Lunes del Alba', badge:'🌅 5–7h' },
+    amanecer_martes:    { sky:['#0d1a2e','#1e2e50','#c47a3a'], sun:.4, birds:.8, rain:.1, name:'Amanecer Tormentoso', badge:'🌅 5–7h' },
+    amanecer_miercoles: { sky:['#1c0a1a','#3d1035','#8b3060'], sun:.35, mist:.6, fireflies:.2, name:'Amanecer Púrpura', badge:'🌅 5–7h' },
+    amanecer_jueves:    { sky:['#0a1020','#1e3050','#d48a30'], sun:.5, birds:1, name:'Amanecer de Aves', badge:'🌅 5–7h' },
+    amanecer_viernes:   { sky:['#1a0808','#4a1a0a','#c46030'], sun:.4, fog:.5, name:'Alba Dorada', badge:'🌅 5–7h' },
+    amanecer_sabado:    { sky:['#0a0814','#1a1228','#8a4020'], sun:.3, snow:.3, name:'Amanecer Nevado', badge:'🌅 5–7h' },
+    amanecer_domingo:   { sky:['#080c18','#18243a','#c88040'], sun:.5, birds:.7, mist:.3, name:'Domingo Dorado', badge:'🌅 5–7h' },
+    manana_lunes:       { sky:['#0e2040','#1a3a6a','#4a7ab0'], sun:.7, birds:.5, name:'Lunes de Cielo Azul', badge:'🌤 7–12h' },
+    manana_martes:      { sky:['#183050','#284a80','#5890c0'], sun:.6, clouds:.5, birds:.4, name:'Mañana Nublada', badge:'🌤 7–12h' },
+    manana_miercoles:   { sky:['#102038','#203060','#4878a8'], sun:.8, rain:.4, name:'Lluvia de Mañana', badge:'🌤 7–12h' },
+    manana_jueves:      { sky:['#0c1c38','#1a2e5a','#3860a0'], sun:.7, mist:.3, birds:.6, name:'Mañana Serena', badge:'🌤 7–12h' },
+    manana_viernes:     { sky:['#142540','#203860','#4070a0'], sun:.75, birds:.8, name:'Mañana de Pájaros', badge:'🌤 7–12h' },
+    manana_sabado:      { sky:['#1a3050','#284870','#5088b8'], sun:.65, clouds:.4, fog:.2, name:'Sábado Misterioso', badge:'🌤 7–12h' },
+    manana_domingo:     { sky:['#0e2040','#1c3460','#4a7ab0'], sun:.9, birds:.9, name:'Domingo Luminoso', badge:'🌤 7–12h' },
+    mediodia_lunes:     { sky:['#0a1830','#143056','#3870a8'], sun:1, clouds:.3, name:'Cénit de Lunes', badge:'☀️ 12–15h' },
+    mediodia_martes:    { sky:['#0c1a32','#1a2e5a','#4080b0'], sun:.9, rain:.6, name:'Tormenta de Mediodía', badge:'☀️ 12–15h' },
+    mediodia_miercoles: { sky:['#0a1828','#183050','#3068a0'], sun:1, clouds:.6, name:'Miércoles de Nubes', badge:'☀️ 12–15h' },
+    mediodia_jueves:    { sky:['#081628','#162848','#2e5898'], sun:.95, name:'Claridad Pura', badge:'☀️ 12–15h' },
+    mediodia_viernes:   { sky:['#0a1830','#183050','#3870a8'], sun:.9, birds:.3, name:'Viernes Amplio', badge:'☀️ 12–15h' },
+    mediodia_sabado:    { sky:['#0c1c34','#1a2e58','#3a72a8'], sun:.85, clouds:.5, rain:.2, name:'Sábado Variable', badge:'☀️ 12–15h' },
+    mediodia_domingo:   { sky:['#081428','#142440','#2a5090'], sun:1, birds:.4, name:'Mediodía Domingo', badge:'☀️ 12–15h' },
+    tarde_lunes:        { sky:['#182040','#2a3460','#5060a0'], sun:.6, clouds:.5, name:'Tarde de Lunes', badge:'🌇 15–18h' },
+    tarde_martes:       { sky:['#1e2848','#344070','#6878b0'], sun:.55, rain:.3, name:'Lluvia de Tarde', badge:'🌇 15–18h' },
+    tarde_miercoles:    { sky:['#1a2440','#2e3a68','#5868a8'], sun:.6, mist:.4, name:'Tarde Brumosa', badge:'🌇 15–18h' },
+    tarde_jueves:       { sky:['#182038','#2a3060','#5060a0'], sun:.65, clouds:.3, birds:.5, name:'Tarde de Gaviotas', badge:'🌇 15–18h' },
+    tarde_viernes:      { sky:['#1e2848','#30406a','#6070a8'], sun:.6, name:'Tarde de Viernes', badge:'🌇 15–18h' },
+    tarde_sabado:       { sky:['#182038','#283858','#507098'], sun:.55, clouds:.6, name:'Tarde Sombría', badge:'🌇 15–18h' },
+    tarde_domingo:      { sky:['#1a2240','#2c3860','#5870a0'], sun:.7, birds:.6, name:'Tarde Dorada', badge:'🌇 15–18h' },
+    atardecer_lunes:    { sky:['#3a1a28','#6a2818','#c05020'], sun:.4, clouds:.6, name:'Atardecer de Lunes', badge:'🌆 18–20h' },
+    atardecer_martes:   { sky:['#2a1030','#5a2020','#c04030'], sun:.35, rain:.2, name:'Puesta Tormentosa', badge:'🌆 18–20h' },
+    atardecer_miercoles:{ sky:['#3a1830','#6a2840','#b04060'], sun:.4, mist:.3, name:'Atardecer Púrpura', badge:'🌆 18–20h' },
+    atardecer_jueves:   { sky:['#2a1020','#5a2018','#c84820'], sun:.5, birds:.7, name:'Vuelo del Atardecer', badge:'🌆 18–20h' },
+    atardecer_viernes:  { sky:['#3a1818','#6a2a10','#d05818'], sun:.45, clouds:.5, name:'Viernes Naranja', badge:'🌆 18–20h' },
+    atardecer_sabado:   { sky:['#2e1520','#581f2a','#b84038'], sun:.4, fog:.4, name:'Sábado Rosado', badge:'🌆 18–20h' },
+    atardecer_domingo:  { sky:['#2a1218','#501e18','#c04420'], sun:.5, clouds:.4, name:'Último Atardecer', badge:'🌆 18–20h' },
+    noche_lunes:        { sky:['#04060e','#08101c','#0c1828'], stars:.8, moon:.6, fog:.3, name:'Noche de Lunes', badge:'🌙 20–23h' },
+    noche_martes:       { sky:['#03050c','#070c18','#0b1424'], stars:.9, moon:.5, fireflies:.5, name:'Luciérnagas de Martes', badge:'🌙 20–23h' },
+    noche_miercoles:    { sky:['#040608','#08101a','#0c1828'], stars:.7, moon:.4, rain:.4, name:'Lluvia Nocturna', badge:'🌙 20–23h' },
+    noche_jueves:       { sky:['#03050e','#07091a','#0b1128'], stars:.85, moon:.8, name:'Luna de Jueves', badge:'🌙 20–23h' },
+    noche_viernes:      { sky:['#05060e','#090c1c','#0e1428'], stars:.9, moon:.5, aurora:.4, name:'Aurora de Viernes', badge:'🌙 20–23h' },
+    noche_sabado:       { sky:['#04060c','#080c18','#0c1224'], stars:1, moon:.7, name:'Noche Estrellada', badge:'🌙 20–23h' },
+    noche_domingo:      { sky:['#030508','#070a14','#0b1020'], stars:.8, moon:.9, fog:.3, name:'Noche de Domingo', badge:'🌙 20–23h' },
+    medianoche_lunes:   { sky:['#030408','#060810','#090d18'], stars:.9, moon:.8, fog:.5, name:'Medianoche Silente', badge:'✨ 23–1h' },
+    medianoche_martes:  { sky:['#02030a','#05070f','#080b18'], stars:1, moon:.6, aurora:.7, name:'Aurora Boreal II', badge:'✨ 23–1h' },
+    medianoche_miercoles:{ sky:['#030408','#06080f','#090c18'], stars:.85, moon:.5, rain:.2, name:'Lluvia de Meteoros', badge:'✨ 23–1h' },
+    medianoche_jueves:  { sky:['#02030a','#04060e','#070918'], stars:.9, moon:1, name:'Luna Llena de Jueves', badge:'✨ 23–1h' },
+    medianoche_viernes: { sky:['#030408','#06080e','#090c1a'], stars:1, moon:.6, fireflies:.3, name:'Magia de Viernes', badge:'✨ 23–1h' },
+    medianoche_sabado:  { sky:['#030408','#060910','#0a0e1c'], stars:1, moon:.9, aurora:.5, name:'Cielo Infinito', badge:'✨ 23–1h' },
+    medianoche_domingo: { sky:['#020408','#05080f','#080c18'], stars:.9, moon:.8, fog:.4, name:'Víspera del Lunes', badge:'✨ 23–1h' },
   };
 
   const MOMENTS = ['madrugada','amanecer','manana','mediodia','tarde','atardecer','noche','medianoche'];
   const DAYS    = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
-  const MOMENT_ICONS = ['🌑','🌅','🌤','☀️','🌇','🌆','🌙','✨'];
 
   function hourToMoment(h){
-    if(h<5)  return 0;
-    if(h<7)  return 1;
-    if(h<12) return 2;
-    if(h<15) return 3;
-    if(h<18) return 4;
-    if(h<20) return 5;
-    if(h<23) return 6;
-    return 7;
+    if(h<5)  return 0; // madrugada
+    if(h<7)  return 1; // amanecer
+    if(h<12) return 2; // mañana
+    if(h<15) return 3; // mediodia
+    if(h<18) return 4; // tarde
+    if(h<20) return 5; // atardecer
+    if(h<23) return 6; // noche
+    return 7;           // medianoche
   }
 
   function getScene(day, moment){
@@ -447,7 +496,6 @@ const BG = (() => {
         case 'bird': {
           ctx.globalAlpha=this.alpha;
           const flap=Math.sin(this.flapPhase)*this.size;
-          const sc=scene.sky[0]; // match sky color roughly
           ctx.strokeStyle=`rgba(20,30,50,.75)`; ctx.lineWidth=1.3;
           ctx.beginPath(); ctx.moveTo(this.x,this.y);
           ctx.quadraticCurveTo(this.x-this.size,this.y-flap,this.x-this.size*2,this.y);
@@ -519,11 +567,11 @@ const BG = (() => {
     ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
   }
   function drawHorizonGlow(scene){
-    const moment=scene.moment;
+    const m=scene.moment;
     let glowColor=null;
-    if(moment===1||moment===5) glowColor='rgba(200,100,30,.18)';
-    else if(moment===2||moment===4) glowColor='rgba(80,120,180,.12)';
-    else if(moment===3) glowColor='rgba(60,120,200,.09)';
+    if(m===1||m===5) glowColor='rgba(200,100,30,.18)';
+    else if(m===2||m===4) glowColor='rgba(80,120,180,.12)';
+    else if(m===3) glowColor='rgba(60,120,200,.09)';
     if(!glowColor) return;
     const g=ctx.createLinearGradient(0,H*.45,0,H*.75);
     g.addColorStop(0,'transparent'); g.addColorStop(.5,glowColor); g.addColorStop(1,'transparent');
@@ -544,10 +592,10 @@ const BG = (() => {
   }
   function drawSun(scene){
     if(!(scene.sun>0)) return;
-    const moment=scene.moment;
+    const m=scene.moment;
     let sy=H*.07;
-    if(moment===1||moment===5) sy=H*.22; // near horizon
-    else if(moment===3) sy=H*.04;
+    if(m===1||m===5) sy=H*.22;
+    else if(m===3) sy=H*.04;
     const sx=W*.82, sr=22*Math.min(scene.sun,1);
     ctx.save();
     const eg=ctx.createRadialGradient(sx,sy,sr,sx,sy,sr*7);
@@ -559,13 +607,13 @@ const BG = (() => {
     cg.addColorStop(0,`rgba(255,240,160,${scene.sun*.65})`); cg.addColorStop(1,'transparent');
     ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(sx,sy,sr*2.5,0,Math.PI*2); ctx.fill();
     const sg=ctx.createRadialGradient(sx-sr*.3,sy-sr*.3,sr*.1,sx,sy,sr);
-    sg.addColorStop(0,'#fffef0'); sg.addColorStop(1,moment===5?'#f06020':'#ffd060');
+    sg.addColorStop(0,'#fffef0'); sg.addColorStop(1,m===5?'#f06020':'#ffd060');
     ctx.globalAlpha=scene.sun*.92;
     ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.fillStyle=sg; ctx.fill();
     ctx.restore();
   }
 
-  // ── RENDER ──────────────────────────────────────────────
+  // ── RENDER LOOP — el canvas está fixed en CSS, no se mueve nunca ──
   function render(){
     tick++;
     ctx.clearRect(0,0,W,H);
@@ -582,14 +630,15 @@ const BG = (() => {
   }
 
   function resize(){
+    // Siempre usamos window.innerWidth/Height porque el canvas es fixed
     W=window.innerWidth; H=window.innerHeight;
     canvas.width=W*devicePixelRatio; canvas.height=H*devicePixelRatio;
     canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    ctx.setTransform(1,0,0,1,0,0); // reset transform
     ctx.scale(devicePixelRatio,devicePixelRatio);
     if(currentScene) buildParticles(currentScene);
   }
 
-  // ── TRANSICIÓN SUAVE ─────────────────────────────────────
   function transitionTo(day, moment){
     const overlay=$('sceneTransOverlay');
     overlay.classList.add('fade');
@@ -602,12 +651,11 @@ const BG = (() => {
   }
 
   function updatePill(scene){
-    $('pillIcon').textContent=scene.badge?scene.badge.split(' ')[0]:MOMENT_ICONS[scene.moment];
-    $('pillName').textContent=scene.name;
-    $('pillTime').textContent=scene.badge||'';
+    $('pillIcon').textContent = scene.badge ? scene.badge.split(' ')[0] : '🌙';
+    $('pillName').textContent = scene.name || '';
+    $('pillBadge').textContent = scene.badge || '';
   }
 
-  // ── AUTO-UPDATE HORARIO ──────────────────────────────────
   let lastHour=-1, lastDay=-1;
   function checkAutoUpdate(){
     const now=new Date();
@@ -615,37 +663,38 @@ const BG = (() => {
     const m=hourToMoment(h);
     if(h!==lastHour||d!==lastDay){
       lastHour=h; lastDay=d;
-      if(currentScene) { transitionTo(d,m); }
+      if(currentScene) transitionTo(d,m);
       else { currentScene=getScene(d,m); buildParticles(currentScene); updatePill(currentScene); }
     }
   }
 
   function init(){
     resize();
-    window.addEventListener('resize',()=>{ resize(); });
+    window.addEventListener('resize', resize);
     const now=new Date();
     const d=now.getDay(), m=hourToMoment(now.getHours());
     currentScene=getScene(d,m);
     buildParticles(currentScene);
     updatePill(currentScene);
     render();
-    // Revisar cada minuto
     setInterval(checkAutoUpdate,60000);
   }
 
-  return { init, getScene, DAYS, MOMENTS, MOMENT_ICONS, hourToMoment,
-    getCurrentScene:()=>currentScene,
-    PALETTES };
+  return {
+    init,
+    getCurrentScene: ()=>currentScene,
+    PALETTES,
+    MOMENTS,
+    DAYS,
+    hourToMoment,
+    getScene
+  };
 })();
 
 // ══════════════════════════════════════════════════════════
-// 🥚 EASTER EGGS — eventos especiales por tipo de escena
+// 🥚 EASTER EGGS
 // ══════════════════════════════════════════════════════════
 const EASTER_EGGS = (() => {
-  const bgCanvas = $('bgCanvas');
-  let ctx; // se usa solo para efectos adicionales en canvas overlay
-
-  // Toast de descubrimiento
   function showToast(msg){
     const t=$('easterToast');
     t.textContent=msg;
@@ -653,7 +702,6 @@ const EASTER_EGGS = (() => {
     setTimeout(()=>t.classList.remove('show'),4000);
   }
 
-  // ── Estrella fugaz (para escenas nocturnas/madrugada) ──
   function shootingStar(){
     const c=document.createElement('canvas');
     const dpr=devicePixelRatio||1;
@@ -667,15 +715,14 @@ const EASTER_EGGS = (() => {
     const angle=Math.PI*.18+Math.random()*.12;
     const len=Math.random()*180+120;
     const speed=Math.random()*18+14;
-    let dist=0, opacity=0;
-    const trail=[];
+    let dist=0; const trail=[];
     function frame(){
       ctx.clearRect(0,0,W,H);
-      dist+=speed; opacity=dist<60?dist/60:Math.max(0,1-(dist-len*.6)/(len*.4));
+      dist+=speed;
+      const opacity=dist<60?dist/60:Math.max(0,1-(dist-len*.6)/(len*.4));
       const x=startX+Math.cos(angle+Math.PI)*dist;
       const y=startY+Math.sin(angle+Math.PI)*dist;
-      trail.unshift({x,y});
-      if(trail.length>18) trail.pop();
+      trail.unshift({x,y}); if(trail.length>18) trail.pop();
       trail.forEach((pt,i)=>{
         const a=opacity*(1-i/trail.length)*.9;
         const r=2.5*(1-i/trail.length);
@@ -691,13 +738,11 @@ const EASTER_EGGS = (() => {
     requestAnimationFrame(frame);
   }
 
-  // ── Tormenta de meteoros (lluvia de estrellas intensa) ──
   function meteorShower(){
     showToast('✨ Lluvia de meteoros — toca el cielo');
     for(let i=0;i<12;i++) setTimeout(()=>shootingStar(), i*320+Math.random()*200);
   }
 
-  // ── Relámpago (escenas de lluvia) ──
   function lightning(){
     const c=document.createElement('canvas');
     const W=window.innerWidth, H=window.innerHeight;
@@ -714,10 +759,7 @@ const EASTER_EGGS = (() => {
       if(Math.random()>.6) bolt(nx,ny,dx*.8+(Math.random()-.5)*30,dy*.9,depth+1);
       bolt(nx,ny,dx*.8+(Math.random()-.5)*20,dy*.85,depth+1);
     }
-    ctx.strokeStyle='rgba(200,220,255,.9)'; ctx.lineWidth=2;
-    bolt(Math.random()*W*.6+W*.2,0,( Math.random()-.5)*80,H*.07,0);
-    // flash
-    document.body.style.transition='none';
+    bolt(Math.random()*W*.6+W*.2,0,(Math.random()-.5)*80,H*.07,0);
     const flash=document.createElement('div');
     flash.style.cssText='position:fixed;inset:0;z-index:4;background:rgba(180,200,255,.18);pointer-events:none;';
     document.body.appendChild(flash);
@@ -726,7 +768,6 @@ const EASTER_EGGS = (() => {
     showToast('⚡ Tormenta en el horizonte');
   }
 
-  // ── Aurora danza extra (escenas de aurora) ──
   function auroraFlare(){
     const c=document.createElement('canvas');
     const dpr=devicePixelRatio||1;
@@ -763,7 +804,6 @@ const EASTER_EGGS = (() => {
     showToast('🌌 Aurora boreal danzando — momento único');
   }
 
-  // ── Copos mágicos extra (escenas de nieve) ──
   function snowBurst(){
     const c=document.createElement('canvas');
     const W=window.innerWidth, H=window.innerHeight;
@@ -779,7 +819,7 @@ const EASTER_EGGS = (() => {
     }));
     let t=0;
     function frame(){
-      ctx.clearRect(0,0,W,H); t+=1;
+      ctx.clearRect(0,0,W,H); t++;
       const fadeAlpha=Math.min(1,t/20)*Math.max(0,1-(t-160)/40);
       flakes.forEach(f=>{
         f.sp+=f.sw; f.x+=f.vx+Math.sin(f.sp)*.5; f.y+=f.vy;
@@ -796,7 +836,6 @@ const EASTER_EGGS = (() => {
     showToast('❄️ Primera nevada de la noche');
   }
 
-  // ── Bandada de pájaros extras (escenas de amanecer/tarde) ──
   function birdFlock(){
     const c=document.createElement('canvas');
     const W=window.innerWidth, H=window.innerHeight;
@@ -831,7 +870,6 @@ const EASTER_EGGS = (() => {
     showToast('🦅 Bandada migrando al amanecer');
   }
 
-  // ── Halo lunar extra (lunas llenas) ──
   function moonHalo(){
     const c=document.createElement('canvas');
     const dpr=devicePixelRatio||1;
@@ -859,7 +897,6 @@ const EASTER_EGGS = (() => {
     showToast('🌕 Halo lunar — luz refractada en hielo');
   }
 
-  // ── Luciérnagas sincronizadas ──
   function fireflySync(){
     showToast('✨ Las luciérnagas sincronizan su luz');
     const c=document.createElement('canvas');
@@ -877,7 +914,7 @@ const EASTER_EGGS = (() => {
     function frame(){
       ctx.clearRect(0,0,W,H); t+=.04;
       const sync=(.5+.5*Math.sin(t*2));
-      const life=Math.min(1,t/1)*Math.max(0,1-(t-5)*.5);
+      const life=Math.min(1,t)*Math.max(0,1-(t-5)*.5);
       fflies.forEach(f=>{
         f.x+=f.vx+(Math.random()-.5)*.1; f.y+=f.vy+(Math.random()-.5)*.1;
         if(f.x<0||f.x>W) f.vx*=-1; if(f.y<0||f.y>H) f.vy*=-1;
@@ -893,7 +930,6 @@ const EASTER_EGGS = (() => {
     requestAnimationFrame(frame);
   }
 
-  // ── Sol naciente con rayos 360° (mediodía) ──
   function sunRays360(){
     const c=document.createElement('canvas');
     const dpr=devicePixelRatio||1;
@@ -923,12 +959,10 @@ const EASTER_EGGS = (() => {
     showToast('☀️ El sol en su cénit — momento perfecto');
   }
 
-  // ── Mapa de las escenas → easter egg correspondiente ──
   function triggerForScene(scene){
     if(!scene) return;
     const m=scene.moment;
     const p=BG.PALETTES[scene.key]||{};
-    // Probabilidades distintas según momento
     if((m===0||m===7)&&p.stars>0.8){
       const r=Math.random();
       if(r<.4) { shootingStar(); if(Math.random()<.3) setTimeout(shootingStar,700); }
@@ -937,22 +971,16 @@ const EASTER_EGGS = (() => {
       else if(r<.8) { showToast('💫 Cinco estrellas fugaces en una noche'); for(let i=0;i<5;i++) setTimeout(()=>shootingStar(),i*400+Math.random()*200); }
       else meteorShower();
     } else if((m===0||m===7)&&p.rain>0){
+      Math.random()<.5?lightning():meteorShower();
+    } else if(m===1||m===5){
       const r=Math.random();
-      if(r<.5) lightning();
-      else meteorShower();
-    } else if(m===1||m===5){ // amanecer / atardecer
+      if(r<.45) birdFlock(); else if(r<.7) sunRays360(); else shootingStar();
+    } else if(m===2||m===4){
       const r=Math.random();
-      if(r<.45) birdFlock();
-      else if(r<.7) sunRays360();
-      else shootingStar();
-    } else if(m===2||m===4){ // mañana / tarde
-      const r=Math.random();
-      if(r<.5) birdFlock();
-      else if(r<.75) { showToast('🍃 Una brisa pasa por el bosque'); }
-      else sunRays360();
-    } else if(m===3){ // mediodía
+      if(r<.5) birdFlock(); else if(r<.75) showToast('🍃 Una brisa pasa por el bosque'); else sunRays360();
+    } else if(m===3){
       sunRays360();
-    } else if(m===6){ // noche
+    } else if(m===6){
       const r=Math.random();
       if(r<.35) shootingStar();
       else if(r<.55&&p.fireflies>0) fireflySync();
@@ -963,34 +991,24 @@ const EASTER_EGGS = (() => {
     }
   }
 
-  // Disparar cada ~35-70s de manera aleatoria y silenciosa
   function scheduleRandom(){
     const delay=Math.random()*35000+30000;
-    setTimeout(()=>{
-      triggerForScene(BG.getCurrentScene());
-      scheduleRandom();
-    }, delay);
-  }
-
-  // Toque en la parte superior del canvas = easter egg manual
-  function initTap(){
-    $('bgCanvas').addEventListener('click', e=>{
-      if(e.clientY<window.innerHeight*.35){
-        triggerForScene(BG.getCurrentScene());
-      }
-    });
+    setTimeout(()=>{ triggerForScene(BG.getCurrentScene()); scheduleRandom(); }, delay);
   }
 
   function init(){
     scheduleRandom();
-    initTap();
+    // Toque en la parte superior del canvas (fixed) = easter egg
+    $('bgCanvas').addEventListener('click', e=>{
+      if(e.clientY<window.innerHeight*.35) triggerForScene(BG.getCurrentScene());
+    });
   }
 
   return { init, triggerForScene };
 })();
 
 // ══════════════════════════════════════════════════════════
-// TEMA HORARIO
+// TEMA HORARIO — saludo en el header
 // ══════════════════════════════════════════════════════════
 function applyBodyTheme(){
   const h=new Date().getHours();
@@ -1005,22 +1023,30 @@ applyBodyTheme();
 setInterval(applyBodyTheme,60000);
 
 // ══════════════════════════════════════════════════════════
-// AUDIO
+// AUDIO ENGINE
 // ══════════════════════════════════════════════════════════
 let AC=null, masterGain=null, masterVolume=0.8;
 const audioBuffers={}, state={}, localVolumes={};
 
-// Binaural: nodos separados por canal L y R
 let bwNodes={ gainL:null, gainR:null, oscL:null, oscR:null, mergerGain:null };
-let bwVolume=0.08; // 8% por defecto — seguro para auriculares
-const BW_MAX=0.25; // tope absoluto 25%
+let bwVolume=0.08;
+const BW_MAX=0.25;
 
 function initAudio(){
   if(!AC){ AC=new(window.AudioContext||window.webkitAudioContext)(); masterGain=AC.createGain(); masterGain.gain.value=masterVolume; masterGain.connect(AC.destination); }
   if(AC.state==='suspended') AC.resume();
 }
+
 function organicPulseLoop(){
-  if(AC&&masterGain){ const now=AC.currentTime; Object.keys(state).forEach(id=>{ const s=state[id]; if(!s) return; const pulse=Math.sin(now*s.modFreq1+s.modOffset)*.5+Math.sin(now*s.modFreq2)*.5; const target=Math.max(0,Math.min(1,localVolumes[id]*(1+pulse*.12))); s.gain.gain.setTargetAtTime(target,now,.3); }); }
+  if(AC&&masterGain){
+    const now=AC.currentTime;
+    Object.keys(state).forEach(id=>{
+      const s=state[id]; if(!s) return;
+      const pulse=Math.sin(now*s.modFreq1+s.modOffset)*.5+Math.sin(now*s.modFreq2)*.5;
+      const target=Math.max(0,Math.min(1,localVolumes[id]*(1+pulse*.12)));
+      s.gain.gain.setTargetAtTime(target,now,.3);
+    });
+  }
   requestAnimationFrame(organicPulseLoop);
 }
 organicPulseLoop();
@@ -1031,12 +1057,12 @@ function updateBwSafeUI(vol){
   if(fill) fill.style.width=`${pct}%`;
   if(valEl) valEl.textContent=`${Math.round(vol*100)}%`;
   if(lbl){
-    if(pct<=40)      { lbl.textContent='SEGURO';    lbl.style.color='#4ade80'; }
-    else if(pct<=72) { lbl.textContent='MODERADO';  lbl.style.color='#fbbf24'; }
-    else             { lbl.textContent='ALTO';       lbl.style.color='#f87171'; }
+    if(pct<=40)      { lbl.textContent='SEGURO';   lbl.style.color='#4ade80'; }
+    else if(pct<=72) { lbl.textContent='MODERADO'; lbl.style.color='#fbbf24'; }
+    else             { lbl.textContent='ALTO';      lbl.style.color='#f87171'; }
   }
   const sl=$('bwSlider');
-  if(sl) updateSlider(sl,'#a78bfa', 0, BW_MAX);
+  if(sl) updateSlider(sl,'#a78bfa',0,BW_MAX);
 }
 
 function stopBrainwave(){
@@ -1045,7 +1071,8 @@ function stopBrainwave(){
   ['oscL','oscR','gainL','gainR','mergerGain'].forEach(k=>{ try{bwNodes[k].disconnect();}catch(e){} });
   bwNodes={gainL:null,gainR:null,oscL:null,oscR:null,mergerGain:null};
   document.querySelectorAll('.bw-btn').forEach(b=>b.classList.remove('act'));
-  $('bwVol').classList.remove('vis'); $('bwSafeBar').classList.remove('vis');
+  $('bwVol').classList.remove('vis');
+  $('bwSafeBar').classList.remove('vis');
 }
 
 document.querySelectorAll('.bw-btn').forEach(btn=>{
@@ -1054,57 +1081,50 @@ document.querySelectorAll('.bw-btn').forEach(btn=>{
     const hz=parseFloat(btn.dataset.hz);
     const base=parseFloat(btn.dataset.base)||200;
     const wasActive=btn.classList.contains('act');
-    stopBrainwave(); if(wasActive) return;
+    stopBrainwave();
+    if(wasActive) return;
 
     btn.classList.add('act');
     $('bwVol').classList.add('vis');
     $('bwSafeBar').classList.add('vis');
     updateBwSafeUI(bwVolume);
 
-    // ── BINAURAL REAL: canal L = base Hz, canal R = base + beatHz ──
-    // Usa ChannelMergerNode para separar L y R
-    const merger = AC.createChannelMerger(2);
-    bwNodes.mergerGain = AC.createGain();
-    bwNodes.mergerGain.gain.value = bwVolume;
+    const merger=AC.createChannelMerger(2);
+    bwNodes.mergerGain=AC.createGain();
+    bwNodes.mergerGain.gain.value=bwVolume;
     merger.connect(bwNodes.mergerGain);
     bwNodes.mergerGain.connect(masterGain);
 
-    // Canal izquierdo
-    bwNodes.oscL = AC.createOscillator();
-    bwNodes.gainL = AC.createGain();
-    bwNodes.gainL.gain.value = 1;
-    bwNodes.oscL.type = 'sine';
-    bwNodes.oscL.frequency.value = base;
+    bwNodes.oscL=AC.createOscillator();
+    bwNodes.gainL=AC.createGain();
+    bwNodes.gainL.gain.value=1;
+    bwNodes.oscL.type='sine';
+    bwNodes.oscL.frequency.value=base;
     bwNodes.oscL.connect(bwNodes.gainL);
-    bwNodes.gainL.connect(merger, 0, 0); // → L
+    bwNodes.gainL.connect(merger,0,0);
 
-    // Canal derecho (+ beat frequency)
-    bwNodes.oscR = AC.createOscillator();
-    bwNodes.gainR = AC.createGain();
-    bwNodes.gainR.gain.value = 1;
-    bwNodes.oscR.type = 'sine';
-    bwNodes.oscR.frequency.value = base + hz;
+    bwNodes.oscR=AC.createOscillator();
+    bwNodes.gainR=AC.createGain();
+    bwNodes.gainR.gain.value=1;
+    bwNodes.oscR.type='sine';
+    bwNodes.oscR.frequency.value=base+hz;
     bwNodes.oscR.connect(bwNodes.gainR);
-    bwNodes.gainR.connect(merger, 0, 1); // → R
+    bwNodes.gainR.connect(merger,0,1);
 
     bwNodes.oscL.start(); bwNodes.oscR.start();
-
-    // Fade-in suave (100ms) para evitar click al inicio
-    bwNodes.mergerGain.gain.setValueAtTime(0, AC.currentTime);
-    bwNodes.mergerGain.gain.linearRampToValueAtTime(bwVolume, AC.currentTime + 0.1);
+    bwNodes.mergerGain.gain.setValueAtTime(0,AC.currentTime);
+    bwNodes.mergerGain.gain.linearRampToValueAtTime(bwVolume,AC.currentTime+0.1);
   });
 });
 
 $('bwSlider').addEventListener('input',e=>{
-  // Clamp al máximo de seguridad
-  bwVolume = Math.min(parseFloat(e.target.value), BW_MAX);
-  e.target.value = bwVolume; // por si acaso
+  bwVolume=Math.min(parseFloat(e.target.value),BW_MAX);
+  e.target.value=bwVolume;
   updateBwSafeUI(bwVolume);
-  if(bwNodes.mergerGain && AC)
-    bwNodes.mergerGain.gain.setTargetAtTime(bwVolume, AC.currentTime, .1);
+  if(bwNodes.mergerGain&&AC)
+    bwNodes.mergerGain.gain.setTargetAtTime(bwVolume,AC.currentTime,.1);
 });
 updateBwSafeUI(bwVolume);
-
 
 const library=[
   {id:'s1',  icon:'🌬️', color:'#7ec8c8', url:'bbc_atmosphere_07052031.mp3'},
@@ -1144,6 +1164,7 @@ const presets={
   rio:   [{id:'s17',vol:.7},{id:'s26',vol:.6},{id:'s21',vol:.3}],
   local: [],
 };
+
 function updateTimePreset(){
   const h=new Date().getHours();
   if(h>=6&&h<12)  presets.local=[{id:'s4',vol:.6},{id:'s26',vol:.4},{id:'s1',vol:.3}];
@@ -1167,60 +1188,102 @@ library.forEach(s=>{
   mainGrid.appendChild(card);
 });
 
-function updateSlider(el,color,minOv,maxOv){ const mn=minOv??parseFloat(el.min), mx=maxOv??parseFloat(el.max); const pct=(parseFloat(el.value)-mn)/(mx-mn)*100; el.style.background=`linear-gradient(to right,${color} ${pct}%,rgba(255,255,255,.1) ${pct}%)`; }
+function updateSlider(el,color,minOv,maxOv){
+  const mn=minOv??parseFloat(el.min), mx=maxOv??parseFloat(el.max);
+  const pct=(parseFloat(el.value)-mn)/(mx-mn)*100;
+  el.style.background=`linear-gradient(to right,${color} ${pct}%,rgba(255,255,255,.1) ${pct}%)`;
+}
 
 async function startSound(id){
   if(state[id]) return;
   const sd=library.find(s=>s.id===id); if(!sd) return;
   const card=$('card-'+id);
   try{
-    if(!audioBuffers[id]){ const res=await fetch(sd.url); if(!res.ok) throw new Error(`HTTP ${res.status}`); audioBuffers[id]=await AC.decodeAudioData(await res.arrayBuffer()); }
+    if(!audioBuffers[id]){
+      const res=await fetch(sd.url);
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      audioBuffers[id]=await AC.decodeAudioData(await res.arrayBuffer());
+    }
     card.classList.add('on');
     const g=AC.createGain(); g.gain.value=localVolumes[id]; g.connect(masterGain);
     const src=AC.createBufferSource(); src.buffer=audioBuffers[id]; src.loop=true; src.connect(g); src.start();
     state[id]={sourceObj:src,gain:g,modOffset:Math.random()*20,modFreq1:.1+Math.random()*.2,modFreq2:.3+Math.random()*.4};
   }catch(e){ console.warn('Audio:',id,e); card.classList.remove('on'); }
 }
+
 function stopSound(id){
   if(!state[id]) return;
   const{sourceObj,gain}=state[id];
   gain.gain.setTargetAtTime(0,AC.currentTime,.3);
   setTimeout(()=>{ try{sourceObj.stop();sourceObj.disconnect();gain.disconnect();}catch(e){} },600);
-  delete state[id]; $('card-'+id)?.classList.remove('on');
+  delete state[id];
+  $('card-'+id)?.classList.remove('on');
 }
+
+// ── STOP ALL — para todos los sonidos Y la binaural ──────
 function stopAll(){
-  haptic(); [...Object.keys(state)].forEach(stopSound); stopBrainwave(); clearPresetsUI();
+  haptic();
+  [...Object.keys(state)].forEach(stopSound);
+  stopBrainwave();
+  clearPresetsUI();
+  // Limpiar timer si está activo
+  clearInterval(timerInt);
+  $('tdisplay').textContent='';
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));
 }
-function clearPresetsUI(){ document.querySelectorAll('.pre-btn').forEach(b=>b.classList.remove('act')); }
+
+function clearPresetsUI(){
+  document.querySelectorAll('.pre-btn').forEach(b=>b.classList.remove('act'));
+}
 
 document.querySelectorAll('.pre-btn').forEach(btn=>{
   btn.addEventListener('click',async()=>{
     haptic(); initAudio(); stopAll(); btn.classList.add('act');
-    updateTimePreset(); const mix=presets[btn.dataset.preset]||[];
-    for(const item of mix){ localVolumes[item.id]=item.vol; const sl=$('sl-'+item.id),sd=library.find(s=>s.id===item.id); if(sl&&sd){sl.value=item.vol;updateSlider(sl,sd.color);} await startSound(item.id); }
+    updateTimePreset();
+    const mix=presets[btn.dataset.preset]||[];
+    for(const item of mix){
+      localVolumes[item.id]=item.vol;
+      const sl=$('sl-'+item.id), sd=library.find(s=>s.id===item.id);
+      if(sl&&sd){ sl.value=item.vol; updateSlider(sl,sd.color); }
+      await startSound(item.id);
+    }
   });
 });
 
 const mVol=$('masterVol');
-mVol.addEventListener('input',e=>{ initAudio(); masterVolume=parseFloat(e.target.value); updateSlider(mVol,'var(--primary)'); if(masterGain) masterGain.gain.setTargetAtTime(masterVolume,AC.currentTime,.1); });
+mVol.addEventListener('input',e=>{
+  initAudio();
+  masterVolume=parseFloat(e.target.value);
+  updateSlider(mVol,'var(--primary)');
+  if(masterGain) masterGain.gain.setTargetAtTime(masterVolume,AC.currentTime,.1);
+});
 updateSlider(mVol,'var(--primary)');
 
+// ── TIMER ────────────────────────────────────────────────
 let timerInt=null;
 document.querySelectorAll('.tbtn').forEach(btn=>{
   btn.addEventListener('click',()=>{
-    haptic(); document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on')); btn.classList.add('on');
-    clearInterval(timerInt); const mins=parseInt(btn.dataset.m); $('tdisplay').textContent='';
+    haptic();
+    document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    clearInterval(timerInt);
+    $('tdisplay').textContent='';
+    const mins=parseInt(btn.dataset.m);
     if(!mins) return;
     const end=Date.now()+mins*60000;
     timerInt=setInterval(()=>{
       const rem=end-Date.now();
       if(rem<=0){ clearInterval(timerInt); stopAll(); $('tdisplay').textContent=''; return; }
-      const m=Math.floor(rem/60000),s=Math.floor((rem%60000)/1000);
+      const m=Math.floor(rem/60000), s=Math.floor((rem%60000)/1000);
       $('tdisplay').textContent=`⏱ ${m}:${s.toString().padStart(2,'0')}`;
     },1000);
   });
 });
-$('btnStop').addEventListener('click',stopAll);
+
+// ── BOTÓN STOP — detiene todo sin ambigüedades ───────────
+$('btnStop').addEventListener('click', stopAll);
+
+// Reanudar contexto de audio en primer toque
 document.addEventListener('touchstart',()=>{ if(AC&&AC.state==='suspended') AC.resume(); },{once:true});
 document.addEventListener('click',()=>{ if(AC&&AC.state==='suspended') AC.resume(); },{once:true});
 
