@@ -7,9 +7,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#05070d">
 
-<title>Serenidad Studio | Sonidos Ambientales</title>
+<title>Serenidad Studio | Sincronización Temporal</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400&family=Outfit:wght@200;300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet">
 
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -21,7 +21,65 @@
     --text-main: #f8fafc;
     --text-muted: #64748b;
     --primary: #7ec8c8;
-    --accent: #a78bfa;
+    
+    /* Variables del Astro (Luna Plateada por defecto) */
+    --astro-color1: #f8fafc;
+    --astro-color2: #cbd5e1;
+    --astro-color3: #94a3b8;
+    --astro-shadow: rgba(203, 213, 225, 0.15);
+    --astro-y: 40px; 
+    --astro-scale: 1;
+    --stars-opacity: 1;
+    --craters-opacity: 1; /* Cratéres visibles de noche */
+    --leaves-opacity: 0;  /* Sin viento de noche */
+  }
+
+  /* 🌅 TEMA MAÑANA (6 AM - 12 PM) */
+  body.theme-morning {
+    --bg-dark: #1e293b;
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --primary: #fca5a5;
+    --astro-color1: #fff1f2;
+    --astro-color2: #fca5a5;
+    --astro-color3: #f87171;
+    --astro-shadow: rgba(252, 165, 165, 0.4);
+    --astro-y: 120px; 
+    --astro-scale: 1.1;
+    --stars-opacity: 0;
+    --craters-opacity: 0; 
+    --leaves-opacity: 1;  
+  }
+
+  /* ☀️ TEMA MEDIODÍA (12 PM - 6 PM) */
+  body.theme-noon {
+    --bg-dark: #0f172a;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --primary: #fbbf24;
+    --astro-color1: #ffffff;
+    --astro-color2: #fef08a;
+    --astro-color3: #f59e0b;
+    --astro-shadow: rgba(253, 230, 138, 0.5);
+    --astro-y: 30px; 
+    --astro-scale: 1.2;
+    --stars-opacity: 0;
+    --craters-opacity: 0;
+    --leaves-opacity: 1;  
+  }
+
+  /* 🌇 TEMA ATARDECER (6 PM - 8 PM) */
+  body.theme-evening {
+    --bg-dark: #1e1b4b;
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --primary: #fb923c;
+    --astro-color1: #ffedd5;
+    --astro-color2: #fdba74;
+    --astro-color3: #ea580c;
+    --astro-shadow: rgba(249, 115, 22, 0.5);
+    --astro-y: 150px; 
+    --astro-scale: 1.15;
+    --stars-opacity: 0.2; 
+    --craters-opacity: 0;
+    --leaves-opacity: 0.6; 
   }
 
   html, body {
@@ -31,14 +89,83 @@
     font-family: 'Outfit', sans-serif;
     overflow-x: hidden;
     overflow-y: auto;
+    transition: background-color 3s ease;
   }
 
-  /* Fondo Sutil */
+  /* Fondo Atmosférico Dinámico */
   .ambient-bg {
     position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background: radial-gradient(circle at 20% 30%, rgba(126, 200, 200, 0.04) 0%, transparent 40%),
+    background: radial-gradient(circle at 20% var(--astro-y), rgba(126, 200, 200, 0.04) 0%, transparent 40%),
                 radial-gradient(circle at 80% 70%, rgba(167, 139, 250, 0.03) 0%, transparent 40%);
     filter: blur(30px);
+    transition: all 3s ease;
+  }
+  body.theme-morning .ambient-bg { background: radial-gradient(circle at 80% var(--astro-y), rgba(252, 165, 165, 0.08) 0%, transparent 50%); }
+  body.theme-noon .ambient-bg { background: radial-gradient(circle at 80% var(--astro-y), rgba(251, 191, 36, 0.08) 0%, transparent 50%); }
+  body.theme-evening .ambient-bg { background: radial-gradient(circle at 80% var(--astro-y), rgba(234, 88, 12, 0.08) 0%, transparent 50%); }
+
+  /* Estrellas Estáticas */
+  .stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: var(--stars-opacity); transition: opacity 3s ease; }
+  .star { position: absolute; border-radius: 50%; background: white; animation: twinkle var(--d) ease-in-out infinite alternate; }
+  @keyframes twinkle { from { opacity: var(--min-o); transform: scale(1); } to { opacity: var(--max-o); transform: scale(1.4); } }
+
+  /* Estrella Fugaz Premium */
+  .shooting-star {
+    position: absolute;
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.8) 0%, transparent 100%);
+    box-shadow: 0 0 15px rgba(255,255,255,0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: shoot 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  @keyframes shoot {
+    0% { transform: translate(0, 0) rotate(-35deg) scale(0); opacity: 0; }
+    10% { opacity: 1; transform: translate(-20px, 15px) rotate(-35deg) scale(1); }
+    100% { transform: translate(-500px, 350px) rotate(-35deg) scale(0); opacity: 0; }
+  }
+
+  /* Astro (Luna/Sol) con Cratéres dinámicos */
+  .astro-wrap { 
+    position: fixed; right: 30px; z-index: 1; pointer-events: none; 
+    top: var(--astro-y); 
+    transition: top 4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .astro {
+    width: 45px; height: 45px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, var(--astro-color1), var(--astro-color2) 60%, var(--astro-color3));
+    box-shadow: 0 0 30px 8px var(--astro-shadow), 0 0 60px 20px rgba(0,0,0,0.1);
+    transform: scale(var(--astro-scale));
+    transition: all 4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .astro::after {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    background-image: 
+      radial-gradient(circle at 25% 30%, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.1) 15%, transparent 20%),
+      radial-gradient(circle at 75% 45%, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.08) 12%, transparent 18%),
+      radial-gradient(circle at 45% 75%, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.12) 20%, transparent 25%);
+    opacity: var(--craters-opacity);
+    transition: opacity 4s ease;
+  }
+
+  /* Brisa y Hojas (Solo de Día) */
+  .leaves-container {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    opacity: var(--leaves-opacity); transition: opacity 4s ease; overflow: hidden;
+  }
+  .leaf {
+    position: absolute; font-size: 1.2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    animation: blowWind var(--d) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    top: var(--y); left: -50px;
+  }
+  @keyframes blowWind {
+    0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+    10% { opacity: var(--leaf-op); }
+    80% { opacity: var(--leaf-op); }
+    100% { transform: translate(110vw, var(--y-end)) rotate(720deg); opacity: 0; }
   }
 
   /* Contenedor Compacto */
@@ -47,17 +174,24 @@
     padding: 0 0 160px; max-width: 600px; margin: 0 auto;
   }
 
-  header { padding: 40px 20px 20px; text-align: center; }
-  header h1 { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 2.4rem; letter-spacing: 0.1em; }
-  header h1 em { font-style: italic; color: var(--primary); }
-  header p { margin-top: 6px; font-size: 0.75rem; font-weight: 300; letter-spacing: 0.2em; color: var(--text-muted); text-transform: uppercase; }
+  header { padding: 45px 20px 20px; text-align: center; }
+  header h1 { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 2.5rem; letter-spacing: 0.1em; transition: color 1s; margin-bottom: 8px; }
+  header h1 em { font-style: italic; color: var(--primary); transition: color 1s; }
   
+  #timeGreeting { 
+    font-size: 0.8rem; font-weight: 300; letter-spacing: 0.15em; 
+    color: var(--text-main); text-transform: uppercase; 
+    min-height: 25px; display: flex; align-items: center; justify-content: center; gap: 8px;
+    opacity: 0.8; transition: color 2s;
+  }
+  .context-icon { font-size: 1.1rem; }
+
   /* Seccion de Combinaciones (Presets) */
   .presets-container {
     display: flex; gap: 10px; overflow-x: auto; padding: 0 24px 20px; 
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
   }
-  .presets-container::-webkit-scrollbar { display: none; /* Chrome */ }
+  .presets-container::-webkit-scrollbar { display: none; }
   
   .preset-btn {
     flex: 0 0 auto; padding: 10px 18px; border-radius: 20px; border: 1px solid var(--glass-border);
@@ -66,13 +200,13 @@
     backdrop-filter: blur(10px); display: flex; align-items: center; gap: 6px;
   }
   .preset-btn:active { transform: scale(0.95); }
-  .preset-btn.active-preset { background: rgba(126, 200, 200, 0.15); border-color: rgba(126, 200, 200, 0.4); color: var(--primary); }
+  .preset-btn.active-preset { background: rgba(255,255,255,0.1); border-color: var(--primary); color: var(--primary); }
+  
+  .btn-local { border-color: rgba(126, 200, 200, 0.4); }
+  .btn-local.active-preset { background: rgba(126, 200, 200, 0.2); }
 
-  /* Cuadrícula Compacta */
-  .sound-grid { 
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); 
-    gap: 12px; padding: 0 24px; 
-  }
+  /* Cuadrícula */
+  .sound-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 12px; padding: 0 24px; }
 
   .card {
     background: var(--glass-bg); border: 1px solid var(--glass-border); 
@@ -81,32 +215,18 @@
     cursor: pointer; transition: all 0.4s; user-select: none; position: relative; overflow: hidden;
     aspect-ratio: 1/1.2;
   }
-  
-  .card.is-active { 
-    border-color: var(--card-color); background: rgba(18, 22, 35, 0.8); 
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3); 
-  }
+  .card.is-active { border-color: var(--card-color); background: rgba(18, 22, 35, 0.8); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
   
   .icon-wrap { font-size: 1.8rem; line-height: 1; transition: all 0.4s; z-index: 2; margin-bottom: 8px; }
   .card.is-active .icon-wrap { filter: drop-shadow(0 0 10px var(--card-color)); transform: scale(1.05); }
 
-  /* Volumen individual más limpio */
-  .vol-control { 
-    width: 75%; position: absolute; bottom: 8px; opacity: 0; transform: translateY(5px); 
-    transition: all 0.3s; pointer-events: none; z-index: 3; display: flex; flex-direction: column; align-items: center;
-  }
+  .vol-control { width: 75%; position: absolute; bottom: 8px; opacity: 0; transform: translateY(5px); transition: all 0.3s; pointer-events: none; z-index: 3; display: flex; flex-direction: column; align-items: center; }
   .card.is-active .vol-control { opacity: 1; transform: translateY(0); pointer-events: auto; }
   
-  .custom-slider {
-    -webkit-appearance: none; width: 100%; height: 2px; border-radius: 2px;
-    background: rgba(255,255,255,0.1); outline: none; margin: 0;
-  }
-  .custom-slider::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none; width: 10px; height: 10px;
-    border-radius: 50%; background: var(--text-main); cursor: pointer;
-  }
+  .custom-slider { -webkit-appearance: none; width: 100%; height: 2px; border-radius: 2px; background: rgba(255,255,255,0.1); outline: none; margin: 0; }
+  .custom-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 10px; height: 10px; border-radius: 50%; background: var(--text-main); cursor: pointer; }
 
-  /* Dock Inferior Ultra Minimalista */
+  /* Dock Inferior */
   .master-dock {
     position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 600px;
     background: rgba(5, 7, 13, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -126,10 +246,7 @@
   .master-icon { font-size: 1rem; opacity: 0.5; }
 
   .timer-group { display: flex; gap: 8px; justify-content: center; }
-  .btn-time {
-    padding: 8px 12px; border-radius: 10px; border: 1px solid transparent;
-    background: transparent; color: var(--text-muted); font-size: 0.7rem; cursor: pointer;
-  }
+  .btn-time { padding: 8px 12px; border-radius: 10px; border: 1px solid transparent; background: transparent; color: var(--text-muted); font-size: 0.7rem; cursor: pointer; }
   .btn-time.is-active { background: rgba(255,255,255,0.05); color: var(--text-main); border-color: rgba(255,255,255,0.1); }
   
   .time-display { font-size: 0.7rem; color: var(--primary); text-align: center; letter-spacing: 0.2em; min-height: 12px;}
@@ -139,17 +256,24 @@
 <body>
 
 <div class="ambient-bg" aria-hidden="true"></div>
+<!-- Contenedor del Viento y Hojas -->
+<div class="leaves-container" id="leaves" aria-hidden="true"></div>
+<!-- Contenedor de estrellas donde también nacerán las estrellas fugaces -->
+<div class="stars" id="stars" aria-hidden="true"></div>
+<div class="astro-wrap" aria-hidden="true"><div class="astro" id="astro"></div></div>
+
 <audio id="silentAudio" loop style="display:none"></audio>
 
 <main class="app-container">
   <header>
     <h1><em>Sere</em>nidad</h1>
-    <p>Colección de sonidos ambientales</p>
+    <!-- Saludo Dinámico basado solo en la hora -->
+    <p id="timeGreeting"><span class="context-icon">✨</span> Sincronizando momento...</p>
   </header>
   
-  <!-- Combinaciones / Presets -->
   <nav class="presets-container" id="presetsBar">
-    <button class="preset-btn" onclick="playPreset('bosque')">🌲 Lluvia en el Bosque</button>
+    <button class="preset-btn btn-local" id="btnLocal" onclick="playPreset('local')">📍 Tu Momento</button>
+    <button class="preset-btn" onclick="playPreset('bosque')">🌲 Bosque Profundo</button>
     <button class="preset-btn" onclick="playPreset('cabana')">🔥 Noche de Cabaña</button>
     <button class="preset-btn" onclick="playPreset('tibet')">🎐 Paz Tibetana</button>
     <button class="preset-btn" onclick="playPreset('rio')">💧 Río Sereno</button>
@@ -179,6 +303,61 @@
 </div>
 
 <script>
+// --- Estrellas Fijas ---
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 70; i++) {
+  const s = document.createElement('div'); s.className = 'star';
+  const size = Math.random() * 2 + 0.5;
+  const minO = (Math.random() * 0.1 + 0.05).toFixed(2);
+  const maxO = (parseFloat(minO) + Math.random() * 0.4 + 0.1).toFixed(2);
+  const d = (Math.random() * 5 + 3).toFixed(1) + 's';
+  s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${d};--min-o:${minO};--max-o:${maxO};animation-delay:${(Math.random()*5).toFixed(1)}s;`;
+  starsEl.appendChild(s);
+}
+
+// --- Generador de Brisa y Hojas (Biofílico) ---
+const leavesEl = document.getElementById('leaves');
+const leafTypes = ['🍃', '🍂'];
+for (let i = 0; i < 12; i++) {
+  const l = document.createElement('div'); l.className = 'leaf';
+  l.textContent = leafTypes[Math.floor(Math.random() * leafTypes.length)];
+  const y = Math.random() * 80 + 10; 
+  const yEnd = (Math.random() * 300 - 150) + 'px'; 
+  const d = (Math.random() * 15 + 15).toFixed(1) + 's'; 
+  const delay = (Math.random() * 20).toFixed(1) + 's';
+  const op = (Math.random() * 0.4 + 0.2).toFixed(2); 
+  l.style.cssText = `--y:${y}vh; --y-end:${yEnd}; --d:${d}; --leaf-op:${op}; animation-delay:${delay}; font-size:${Math.random() * 0.6 + 0.8}rem;`;
+  leavesEl.appendChild(l);
+}
+
+// --- Generador de Estrellas Fugaces (Easter Egg) ---
+function createShootingStar() {
+  const starsOpacity = window.getComputedStyle(starsEl).opacity;
+  if (parseFloat(starsOpacity) < 0.1) return; 
+
+  const shootingStar = document.createElement('div');
+  shootingStar.classList.add('shooting-star');
+  
+  const startX = Math.random() * window.innerWidth + window.innerWidth / 3;
+  const startY = Math.random() * (window.innerHeight / 2) - 100;
+  
+  shootingStar.style.left = `${startX}px`;
+  shootingStar.style.top = `${startY}px`;
+  
+  starsEl.appendChild(shootingStar);
+  
+  setTimeout(() => { shootingStar.remove(); }, 2000);
+}
+
+function randomShootingStarLoop() {
+  const randomDelay = Math.random() * 30000 + 15000; 
+  setTimeout(() => {
+    createShootingStar();
+    randomShootingStarLoop();
+  }, randomDelay);
+}
+randomShootingStarLoop();
+
 // --- BIBLIOTECA DE 28 SONIDOS BBC ---
 const library = [
   { id: 's1', icon: '🌬️', color: '#7ec8c8', url: 'bbc_atmosphere_07052031.mp3' },
@@ -211,13 +390,54 @@ const library = [
   { id: 's28', icon: '❄️', color: '#ffffff', url: 'bbc_tibetan-sn_nhu0501102.mp3' }
 ];
 
-// --- COMBINACIONES (PRESETS) ---
 const presets = {
-  'bosque': [{id: 's8', vol: 0.8}, {id: 's3', vol: 0.5}, {id: 's23', vol: 0.4}], // Bosque, Lluvia, Mixto
-  'cabana': [{id: 's12', vol: 0.9}, {id: 's9', vol: 0.4}, {id: 's5', vol: 0.3}], // Hoguera, Grillos, Noche
-  'tibet':  [{id: 's28', vol: 0.8}, {id: 's15', vol: 0.5}, {id: 's1', vol: 0.6}], // Nieve tibetana, Iglesia, Viento
-  'rio':    [{id: 's17', vol: 0.7}, {id: 's26', vol: 0.6}, {id: 's21', vol: 0.3}]  // Flujo rápido, Ríos, Lago
+  'bosque': [{id: 's8', vol: 0.8}, {id: 's4', vol: 0.5}, {id: 's23', vol: 0.4}], 
+  'cabana': [{id: 's12', vol: 0.9}, {id: 's9', vol: 0.4}, {id: 's5', vol: 0.3}], 
+  'tibet':  [{id: 's28', vol: 0.8}, {id: 's15', vol: 0.5}, {id: 's1', vol: 0.6}], 
+  'rio':    [{id: 's17', vol: 0.7}, {id: 's26', vol: 0.6}, {id: 's21', vol: 0.3}],
+  'local':  [] 
 };
+
+// --- SINCRONIZACIÓN TEMPORAL SILENCIOSA ---
+function updateTimeTheme() {
+  const hour = new Date().getHours();
+  const body = document.body;
+  const greetingEl = document.getElementById('timeGreeting');
+  
+  let themeClass = '';
+  let greetingText = '';
+  let icon = '';
+  let momentMix = [];
+
+  if (hour >= 6 && hour < 12) {
+    themeClass = 'theme-morning';
+    greetingText = 'Mañana Serena';
+    icon = '🌅';
+    momentMix = [{id: 's4', vol: 0.6}, {id: 's26', vol: 0.4}, {id: 's1', vol: 0.3}]; 
+  } else if (hour >= 12 && hour < 18) {
+    themeClass = 'theme-noon';
+    greetingText = 'Tarde Luminosa';
+    icon = '☀️';
+    momentMix = [{id: 's8', vol: 0.7}, {id: 's25', vol: 0.5}, {id: 's23', vol: 0.3}]; 
+  } else if (hour >= 18 && hour < 20) {
+    themeClass = 'theme-evening';
+    greetingText = 'Atardecer Dorado';
+    icon = '🌇';
+    momentMix = [{id: 's9', vol: 0.5}, {id: 's12', vol: 0.6}]; 
+  } else {
+    themeClass = ''; 
+    greetingText = 'Noche Profunda';
+    icon = '🌙';
+    momentMix = [{id: 's9', vol: 0.7}, {id: 's5', vol: 0.5}, {id: 's2', vol: 0.4}]; 
+  }
+
+  body.className = themeClass;
+  greetingEl.innerHTML = `<span class="context-icon">${icon}</span> ${greetingText}`;
+  presets['local'] = momentMix; 
+}
+
+updateTimeTheme();
+setInterval(updateTimeTheme, 60000);
 
 // --- Motor de Audio Orgánico ---
 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -238,7 +458,7 @@ function organicPulseLoop() {
   Object.keys(state).forEach(id => {
     const s = state[id];
     const pulse = (Math.sin(now * s.modFreq1 + s.modOffset) * 0.5 + Math.sin(now * s.modFreq2) * 0.5);
-    const organicGain = 1 + (pulse * 0.15); // Fluctuación sutil
+    const organicGain = 1 + (pulse * 0.15); 
     s.gain.gain.setTargetAtTime(localVolumes[id] * organicGain, now, 0.2);
   });
   requestAnimationFrame(organicPulseLoop);
@@ -310,28 +530,17 @@ function stopAll() {
   clearPresetsUI();
 }
 
-// --- Control de Combinaciones (Presets) ---
-function clearPresetsUI() {
-  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active-preset'));
-}
+function clearPresetsUI() { document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active-preset')); }
 
 async function playPreset(presetName) {
-  initAudio();
-  stopAll(); // Limpia la mesa
-  
-  // Resalta el botón
+  initAudio(); stopAll(); 
   event.currentTarget.classList.add('active-preset');
-
-  // Carga los sonidos de la combinación
   const mix = presets[presetName];
+  if(!mix || mix.length === 0) return; 
   for (const item of mix) {
     localVolumes[item.id] = item.vol;
     const slider = document.getElementById(`slider-${item.id}`);
-    if (slider) {
-      slider.value = item.vol;
-      const sd = library.find(s => s.id === item.id);
-      updateSliderUI(slider, sd.color);
-    }
+    if (slider) { slider.value = item.vol; const sd = library.find(s => s.id === item.id); updateSliderUI(slider, sd.color); }
     await startSound(item.id);
   }
 }
@@ -368,6 +577,3 @@ organicPulseLoop();
 </script>
 </body>
 </html>
-
-
-```
